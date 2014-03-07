@@ -1,3 +1,9 @@
+hamster-rt (1.03.3.2) precise; urgency=low
+
+  * fix icon on xfce boxes with unity indicator in tray area
+
+ -- Tomasz Sarnowski <sarnowskitomek@gmail.com>  Fri, 07 Mar 2014 22:54:42 +000
+
 hamster-rt (1.03.3.1) precise; urgency=low
 
   * small fixes to integration from upstreams
