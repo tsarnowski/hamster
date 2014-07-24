@@ -1004,32 +1004,41 @@ msgstr "Zarządzanie czasem"
 #~ msgid "_Preferences"
 #~ msgstr "P_referencje"
 
-#~ msgid "Work"
-#~ msgstr "Praca"
+#: ../src/hamster-service:73
+msgid "Work"
+msgstr "Praca"
 
-#~ msgid "Reading news"
-#~ msgstr "Czytanie wiadomości"
+#: ../src/hamster-service:73
+msgid "Reading news"
+msgstr "Czytanie wiadomości"
 
-#~ msgid "Checking stocks"
-#~ msgstr "Sprawdzanie notowań giełdowych"
+#: ../src/hamster-service:74
+msgid "Checking stocks"
+msgstr "Sprawdzanie notowań giełdowych"
 
-#~ msgid "Super secret project X"
-#~ msgstr "Supertajny projekt X"
+#: ../src/hamster-service:75
+msgid "Super secret project X"
+msgstr "Supertajny projekt X"
 
-#~ msgid "World domination"
-#~ msgstr "Dominacja nad światem"
+#: ../src/hamster-service:76
+msgid "World domination"
+msgstr "Dominacja nad światem"
 
-#~ msgid "Day-to-day"
-#~ msgstr "Dzień za dniem"
+#: ../src/hamster-service:77
+msgid "Day-to-day"
+msgstr "Codzienne"
 
-#~ msgid "Lunch"
-#~ msgstr "Obiad"
+#: ../src/hamster-service:77
+msgid "Lunch"
+msgstr "Obiad"
 
-#~ msgid "Watering flowers"
-#~ msgstr "Podlewanie kwiatów"
+#: ../src/hamster-service:78
+msgid "Watering flowers"
+msgstr "Podlewanie kwiatów"
 
-#~ msgid "Doing handstands"
-#~ msgstr "Stanie na rękach"
+#: ../src/hamster-service:79
+msgid "Doing handstands"
+msgstr "Stanie na rękach"
 
 #~ msgid "Show activities window"
 #~ msgstr "Wyświetlanie okna czynności"
