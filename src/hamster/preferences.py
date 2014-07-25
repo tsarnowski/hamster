@@ -144,6 +144,10 @@ class PreferencesEditor(gtk.Object):
         self.rt_query = gtk.Entry()
         self.rt_query.connect("changed", self.on_rt_query_changed)
         self.get_widget('rt_query').add(self.rt_query)
+        
+        self.rt_category_field = gtk.Entry()
+        self.rt_category_field.connect("changed", self.on_rt_category_field_changed)
+        self.get_widget('rt_category_field').add(self.rt_category_field)
 
         # create and fill activity tree
         self.activity_tree = self.get_widget('activity_list')
@@ -301,6 +305,9 @@ class PreferencesEditor(gtk.Object):
 
     def on_rt_query_changed(self, entry):
         conf.set('rt_query', self.rt_query.get_text())
+        
+    def on_rt_category_field_changed(self, entry):
+        conf.set('rt_category_field', self.rt_category_field.get_text())
 
     def on_todo_combo_changed(self, combo):
         conf.set("activities_source", self.activities_sources[combo.get_active()][0])
@@ -368,6 +375,7 @@ class PreferencesEditor(gtk.Object):
         self.rt_user.set_text(conf.get('rt_user'))
         self.rt_pass.set_text(conf.get('rt_pass'))
         self.rt_query.set_text(conf.get('rt_query'))
+        self.rt_category_field.set_text(conf.get('rt_category_field'))
         
         self.get_widget("icon_glow").set_active(conf.get("icon_glow"))
         self.get_widget("show_label").set_active(conf.get("show_label"))
