@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: hamster-time-tracker\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-18 08:47+0100\n"
+"POT-Creation-Date: 2014-07-25 12:14+0200\n"
 "PO-Revision-Date: 2012-09-04 01:58+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <gnomepl@aviary.pl>\n"
@@ -289,7 +289,7 @@ msgid "_Overview"
 msgstr "_Przegląd"
 
 #: ../data/overview.ui.h:8 ../src/hamster-cli:276
-#: ../src/hamster/preferences.py:237 ../src/hamster/reports.py:318
+#: ../src/hamster/preferences.py:242 ../src/hamster/reports.py:318
 #: ../src/hamster/today.py:104
 msgid "Activity"
 msgstr "Czynność"
@@ -355,95 +355,99 @@ msgid "RT query:"
 msgstr "Zapytanie RT:"
 
 #: ../data/preferences.ui.h:12
+msgid "RT category field:"
+msgstr "Pole kategorii RT:"
+
+#: ../data/preferences.ui.h:13
 msgid "Use only remote activities"
 msgstr "Używaj tylko zdalnych aktywności"
 
-#: ../data/preferences.ui.h:13
+#: ../data/preferences.ui.h:14
 msgid "Integration"
 msgstr "Integracja"
 
-#: ../data/preferences.ui.h:14
+#: ../data/preferences.ui.h:15
 msgid "Tracking"
 msgstr "Śledzenie"
 
-#: ../data/preferences.ui.h:15
+#: ../data/preferences.ui.h:16
 msgid "_Categories"
 msgstr "_Kategorie"
 
-#: ../data/preferences.ui.h:16
+#: ../data/preferences.ui.h:17
 msgid "Category list"
 msgstr "Lista kategorii"
 
-#: ../data/preferences.ui.h:17
+#: ../data/preferences.ui.h:18
 msgid "Add category"
 msgstr "Dodaje kategorię"
 
-#: ../data/preferences.ui.h:18
+#: ../data/preferences.ui.h:19
 msgid "Remove category"
 msgstr "Usuwa kategorię"
 
-#: ../data/preferences.ui.h:19
+#: ../data/preferences.ui.h:20
 msgid "Edit category"
 msgstr "Modyfikuje kategorię"
 
-#: ../data/preferences.ui.h:20
+#: ../data/preferences.ui.h:21
 msgid "_Activities"
 msgstr "_Czynności"
 
-#: ../data/preferences.ui.h:21
+#: ../data/preferences.ui.h:22
 msgid "Activity list"
 msgstr "Lista czynności"
 
-#: ../data/preferences.ui.h:22
+#: ../data/preferences.ui.h:23
 msgid "Add activity"
 msgstr "Dodaje czynność"
 
-#: ../data/preferences.ui.h:23
+#: ../data/preferences.ui.h:24
 msgid "Remove activity"
 msgstr "Usuwa czynność"
 
-#: ../data/preferences.ui.h:24
+#: ../data/preferences.ui.h:25
 msgid "Edit activity"
 msgstr "Modyfikuje czynność"
 
-#: ../data/preferences.ui.h:25
+#: ../data/preferences.ui.h:26
 msgid "Tags that should appear in autocomplete"
 msgstr ""
 "Etykiety, które powinny pojawiać się podczas automatycznego uzupełniania"
 
-#: ../data/preferences.ui.h:26
+#: ../data/preferences.ui.h:27
 msgid "Categories and Tags"
 msgstr "Kategorie i etykiety"
 
-#: ../data/preferences.ui.h:27
+#: ../data/preferences.ui.h:28
 msgid "Use icon glow"
 msgstr "Użyj ikony z poświatą"
 
-#: ../data/preferences.ui.h:28
+#: ../data/preferences.ui.h:29
 msgid "Show label"
 msgstr "Pokaż etykietę"
 
-#: ../data/preferences.ui.h:29
+#: ../data/preferences.ui.h:30
 msgid "Label length"
 msgstr "Długość etykiety"
 
-#: ../data/preferences.ui.h:30
+#: ../data/preferences.ui.h:31
 msgid "Last activities days"
 msgstr "Liczba aktywności z ostatnich dni"
 
-#: ../data/preferences.ui.h:31
+#: ../data/preferences.ui.h:32
 msgid "Tray"
 msgstr "Zasobnik"
 
-#: ../data/preferences.ui.h:32
+#: ../data/preferences.ui.h:33
 msgid "Resume the last activity when returning to a workspace"
 msgstr "Wznawia ostatnią czynność po powrocie do obszaru roboczego"
 
-#: ../data/preferences.ui.h:33
+#: ../data/preferences.ui.h:34
 msgid "Start new activity when switching workspaces:"
 msgstr "Rozpoczyna nową czynność podczas przełączania obszarów roboczych:"
 
-#: ../data/preferences.ui.h:34
+#: ../data/preferences.ui.h:35
 msgid "Workspaces"
 msgstr "Obszary robocze"
 
@@ -536,7 +540,7 @@ msgstr "Wyświetl podgląd"
 msgid "No activity"
 msgstr "Brak czynności"
 
-#: ../src/hamster-cli:277 ../src/hamster/preferences.py:180
+#: ../src/hamster-cli:277 ../src/hamster/preferences.py:185
 #: ../src/hamster/reports.py:319
 msgid "Category"
 msgstr "Kategoria"
@@ -561,6 +565,49 @@ msgstr "Czas trwania"
 msgid "Uncategorized"
 msgstr "Bez kategorii"
 
+#: ../src/hamster-service:50 ../src/hamster/edit_activity.py:59
+#: ../src/hamster/preferences.py:64 ../src/hamster/reports.py:88
+#: ../src/hamster/reports.py:127 ../src/hamster/reports.py:256
+#: ../src/hamster/today.py:235
+msgid "Unsorted"
+msgstr "Bez sortowania"
+
+#: ../src/hamster-service:69
+msgid "Work"
+msgstr "Praca"
+
+#: ../src/hamster-service:69
+msgid "Reading news"
+msgstr "Czytanie wiadomości"
+
+#: ../src/hamster-service:70
+msgid "Checking stocks"
+msgstr "Sprawdzanie notowań giełdowych"
+
+#: ../src/hamster-service:71
+msgid "Super secret project X"
+msgstr "Supertajny projekt X"
+
+#: ../src/hamster-service:72
+msgid "World domination"
+msgstr "Dominacja nad światem"
+
+#: ../src/hamster-service:73
+msgid "Day-to-day"
+msgstr "Codzienne"
+
+#: ../src/hamster-service:73
+msgid "Lunch"
+msgstr "Obiad"
+
+#: ../src/hamster-service:74
+msgid "Watering flowers"
+msgstr "Podlewanie kwiatów"
+
+#: ../src/hamster-service:75
+msgid "Doing handstands"
+msgstr "Stanie na rękach"
+
 #: ../src/hamster/about.py:42
 msgid "Project Hamster — track your time"
 msgstr "Projekt Hamster — zarządzanie czasem"
@@ -584,12 +631,6 @@ msgstr ""
 "Łukasz Jernaś <deejay1@srem.org>, 2009\n"
 "Piotr Drąg <piotrdrag@gmail.com>, 2010-2012\n"
 "Aviary.pl <gnomepl@aviary.pl>, 2008-2012"
-
-#: ../src/hamster/edit_activity.py:59 ../src/hamster/preferences.py:64
-#: ../src/hamster/reports.py:88 ../src/hamster/reports.py:127
-#: ../src/hamster/reports.py:256 ../src/hamster/today.py:235
-msgid "Unsorted"
-msgstr "Bez sortowania"
 
 #: ../src/hamster/edit_activity.py:75
 msgid "Update activity"
@@ -689,21 +730,20 @@ msgstr "Ogółem prześledzono %s godzin (%s minut)"
 msgid "None"
 msgstr "Brak"
 
-#: ../src/hamster/preferences.py:155 ../src/hamster/preferences.py:233
+#: ../src/hamster/preferences.py:160 ../src/hamster/preferences.py:238
 msgid "Name"
 msgstr "Nazwa"
 
-#: ../src/hamster/preferences.py:714
+#: ../src/hamster/preferences.py:723
 msgid "New category"
 msgstr "Nowa kategoria"
 
-#: ../src/hamster/preferences.py:727 ../src/hamster/tray.py:342
-#: ../src/hamster/tray.py:346
+#: ../src/hamster/preferences.py:736 ../src/hamster/tray.py:342
 msgid "New activity"
 msgstr "Nowa czynność"
 
 #. notify interval slider value label
-#: ../src/hamster/preferences.py:791
+#: ../src/hamster/preferences.py:800
 #, python-format
 msgid "%(interval_minutes)d minute"
 msgid_plural "%(interval_minutes)d minutes"
@@ -712,7 +752,7 @@ msgstr[1] "%(interval_minutes)d minuty"
 msgstr[2] "%(interval_minutes)d minut"
 
 #. notify interval slider value label
-#: ../src/hamster/preferences.py:796
+#: ../src/hamster/preferences.py:805
 msgid "Never"
 msgstr "Nigdy"
 
@@ -967,11 +1007,6 @@ msgstr "Dopiero rozpoczęto"
 msgid "_Last activities"
 msgstr "_Ostatnie czynności"
 
-#: ../src/hamster/tray.py:287
-#, python-format
-msgid "-%s minutes"
-msgstr "-%s minut"
-
 #: ../src/hamster/widgets/facttree.py:126
 msgid "Export to RT"
 msgstr "Eksport do RT"
@@ -1001,44 +1036,11 @@ msgstr "iCal"
 msgid "Time track"
 msgstr "Zarządzanie czasem"
 
+#~ msgid "-%s minutes"
+#~ msgstr "-%s minut"
+
 #~ msgid "_Preferences"
 #~ msgstr "P_referencje"
-
-#: ../src/hamster-service:73
-msgid "Work"
-msgstr "Praca"
-
-#: ../src/hamster-service:73
-msgid "Reading news"
-msgstr "Czytanie wiadomości"
-
-#: ../src/hamster-service:74
-msgid "Checking stocks"
-msgstr "Sprawdzanie notowań giełdowych"
-
-#: ../src/hamster-service:75
-msgid "Super secret project X"
-msgstr "Supertajny projekt X"
-
-#: ../src/hamster-service:76
-msgid "World domination"
-msgstr "Dominacja nad światem"
-
-#: ../src/hamster-service:77
-msgid "Day-to-day"
-msgstr "Codzienne"
-
-#: ../src/hamster-service:77
-msgid "Lunch"
-msgstr "Obiad"
-
-#: ../src/hamster-service:78
-msgid "Watering flowers"
-msgstr "Podlewanie kwiatów"
-
-#: ../src/hamster-service:79
-msgid "Doing handstands"
-msgstr "Stanie na rękach"
 
 #~ msgid "Show activities window"
 #~ msgstr "Wyświetlanie okna czynności"

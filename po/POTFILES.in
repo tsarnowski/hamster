@@ -13,6 +13,7 @@ data/hamster-windows-service.desktop.in.in
 [type: gettext/glade]data/stats.ui
 [type: gettext/glade]data/today.ui
 src/hamster-cli
+src/hamster-service
 src/hamster/about.py
 src/hamster/db.py
 src/hamster/edit_activity.py
