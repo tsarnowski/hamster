@@ -120,7 +120,8 @@ class PreferencesEditor(gtk.Object):
                                    ("evo", "Evolution"),
                                    ("gtg", "Getting Things Gnome"),
                                    ("rt", "Request Tracker"),
-                                   ("redmine", "Redmine")]
+                                   ("redmine", "Redmine"),
+                                   ("jira", "JIRA")]
         self.todo_combo = gtk.combo_box_new_text()
         for code, label in self.activities_sources:
             self.todo_combo.append_text(label)

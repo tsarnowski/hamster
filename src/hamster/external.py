@@ -26,12 +26,28 @@ import dbus, dbus.mainloop.glib
 import json
 from lib import rt
 from lib import redmine
+from beaker.cache import cache_regions, cache_region
+
+jira_active = True
+try:
+    from jira.client import JIRA
+except:
+    jira_active = False
 
 try:
     import evolution
     from evolution import ecal
 except:
     evolution = None
+
+# configure regions
+cache_regions.update({
+    'short_term':{
+        'expire': 60,
+        'type': 'memory',
+        'key_length': 250
+    }
+})
     
 class ActivitiesSource(gobject.GObject):
     def __init__(self):
@@ -81,6 +97,22 @@ class ActivitiesSource(gobject.GObject):
                     self.source = ""
             else:
                 self.source = ""
+        elif jira_active and self.source == "jira":
+            self.rt_url = conf.get("rt_url")
+            self.rt_user = conf.get("rt_user")
+            self.rt_pass = conf.get("rt_pass")
+            self.rt_query = conf.get("rt_query")
+            self.rt_category = conf.get("rt_category_field")
+            self.rt_category_fallback = conf.get("rt_category_field_fallback")
+            if self.rt_url and self.rt_user and self.rt_pass:
+                try:
+                    options = {'server': self.rt_url}
+                    self.tracker = JIRA(options, basic_auth = (self.rt_user, self.rt_pass), validate = True)
+                except Exception as e:
+                    logging.warn('jira connection failed: '+str(e))
+                    self.source = ""
+            else:
+                self.source = ""
         
     def get_activities(self, query = None):
         if not self.source:
@@ -103,6 +135,24 @@ class ActivitiesSource(gobject.GObject):
                 rt_query = " AND ".join(["(Subject LIKE '%s' OR Owner='%s')" % (q, q) for q in li]) + " AND (Status='new' OR Status='open')"
                 #logging.warn(rt_query)
                 third_activities = self.__extract_from_rt(query, rt_query, False)
+                if activities and third_activities:
+                    activities.append({"name": "---------------------", "category": "other open"})
+                activities.extend(third_activities)
+            return activities
+        elif self.source == "jira":
+            activities = self.__extract_from_jira(query, self.rt_query)
+            direct_issue = None
+            if query and re.match("^[A-Z]+-[0-9]+$", query):
+                issue = self.tracker.issue(query)
+                if issue:
+                    direct_issue = self.__extract_activity_from_jira_issue(issue)
+            if direct_issue:
+                activities.append(direct_issue)
+            if len(activities) <= 2 and not direct_issue and len(query) > 4:
+                li = query.split(' ')
+                jira_query = " AND ".join(["(assignee = '%s' OR summary ~ '%s*')" % (q, q) for q in li]) + " AND resolution = Unresolved order by priority desc, updated desc"
+                #logging.warn(rt_query)
+                third_activities = self.__extract_from_jira('', jira_query)
                 if activities and third_activities:
                     activities.append({"name": "---------------------", "category": "other open"})
                 activities.extend(third_activities)
@@ -179,6 +229,17 @@ class ActivitiesSource(gobject.GObject):
         activity['rt_id']=issue_id;
         activity['category']="";
         return activity
+    
+    def __extract_activity_from_jira_issue(self, issue):
+        activity = {}
+        issue_id = issue.key
+        activity['name'] = str(issue_id)+': '+issue.fields.summary
+        activity['rt_id'] = issue_id
+        if hasattr(issue.fields, self.rt_category):
+            activity['category'] = getattr(issue.fields, self.rt_category)
+        else:
+            activity['category'] = ""
+        return activity
 
     def __extract_from_rt(self, query = None, rt_query = None, checkName = True):
         activities = []
@@ -197,6 +258,19 @@ class ActivitiesSource(gobject.GObject):
             if query is None or all(item in activity['name'].lower() for item in query.lower().split(' ')):
                 activities.append(activity)
         return activities
+        
+    def __extract_from_jira(self, query = None, jira_query = None):
+        activities = []
+        results = self.__search_jira_issues(jira_query)
+        for issue in results:
+            activity = self.__extract_activity_from_jira_issue(issue)
+            if query is None or all(item in activity['name'].lower() for item in query.lower().split(' ')):
+                activities.append(activity)
+        return activities
+    
+    @cache_region('short_term', '__extract_from_jira')
+    def __search_jira_issues(self, jira_query = None):
+        return self.tracker.search_issues(jira_query, fields=','.join(['summary', self.rt_category]), maxResults=100)
         
     def __extract_cat_from_ticket(self, ticket):
         category = "RT"
