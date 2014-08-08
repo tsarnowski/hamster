@@ -69,7 +69,6 @@ class ActivitiesSource(gobject.GObject):
             self.rt_pass = conf.get("rt_pass")
             self.rt_query = conf.get("rt_query")
             self.rt_category = conf.get("rt_category_field")
-            self.rt_category_fallback = conf.get("rt_category_field_fallback")
             if self.rt_url and self.rt_user and self.rt_pass:
                 try:
                     self.tracker = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
@@ -85,7 +84,6 @@ class ActivitiesSource(gobject.GObject):
             self.rt_user = conf.get("rt_user")
             self.rt_pass = conf.get("rt_pass")
             self.rt_category = conf.get("rt_category_field")
-            self.rt_category_fallback = conf.get("rt_category_field_fallback")
             try:
                 self.rt_query = json.loads(conf.get("rt_query"))
             except:
@@ -105,7 +103,6 @@ class ActivitiesSource(gobject.GObject):
             self.rt_pass = conf.get("rt_pass")
             self.rt_query = conf.get("rt_query")
             self.rt_category = conf.get("rt_category_field")
-            self.rt_category_fallback = conf.get("rt_category_field_fallback")
             if self.rt_url and self.rt_user and self.rt_pass:
                 try:
                     options = {'server': self.rt_url}
@@ -279,8 +276,6 @@ class ActivitiesSource(gobject.GObject):
         category = DEFAULT_RT_CATEGORY
         if 'Queue' in ticket:
             category = ticket['Queue']
-        if self.rt_category_fallback in ticket and ticket[self.rt_category_fallback]:
-            category = ticket[self.rt_category_fallback].split('/')[0]
         if self.rt_category in ticket and ticket[self.rt_category]:
             category = ticket[self.rt_category]
 #        owner = None
