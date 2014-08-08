@@ -26,6 +26,7 @@ import dbus, dbus.mainloop.glib
 import json
 from lib import rt
 from lib import redmine
+from lib.rt import DEFAULT_RT_CATEGORY
 from beaker.cache import cache_regions, cache_region
 
 jira_active = True
@@ -48,6 +49,7 @@ cache_regions.update({
         'key_length': 250
     }
 })
+
     
 class ActivitiesSource(gobject.GObject):
     def __init__(self):
@@ -243,7 +245,8 @@ class ActivitiesSource(gobject.GObject):
 
     def __extract_from_rt(self, query = None, rt_query = None, checkName = True):
         activities = []
-        results = self.tracker.search_simple(rt_query)
+#         results = self.tracker.search_simple(rt_query)
+        results = self.tracker.search_raw(rt_query, [self.rt_category])
         for ticket in results:
             activity = self.__extract_activity_from_ticket(ticket)
             if query is None or not checkName or all(item in activity['name'].lower() for item in query.lower().split(' ')):
@@ -273,7 +276,7 @@ class ActivitiesSource(gobject.GObject):
         return self.tracker.search_issues(jira_query, fields=','.join(['summary', self.rt_category]), maxResults=100)
         
     def __extract_cat_from_ticket(self, ticket):
-        category = "RT"
+        category = DEFAULT_RT_CATEGORY
         if 'Queue' in ticket:
             category = ticket['Queue']
         if self.rt_category_fallback in ticket and ticket[self.rt_category_fallback]:

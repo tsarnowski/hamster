@@ -25,6 +25,7 @@ from ..configuration import runtime, conf
 from ..lib import Fact, stuff, graphics
 from .. import external
 from ..lib.rt import TICKET_NAME_REGEX
+from ..lib.rt import DEFAULT_RT_CATEGORY
 
 class ActivityEntry(gtk.Entry):
     __gsignals__ = {
@@ -397,19 +398,21 @@ class ActivityEntry(gtk.Entry):
         model, iter = tree.get_selection().get_selected()
         #TODO tutaj jest błąd!
         name = model.get_value(iter, 1)
+        ticket_name = name
         rt_id = model.get_value(iter, 4)
         delta_time = model.get_value(iter, 5)
         if delta_time:
             name = ' '.join([delta_time, name])
         
-        match = re.match(TICKET_NAME_REGEX, name)
+        match = re.match(TICKET_NAME_REGEX, ticket_name)
         category = ""
-        if not rt_id and match:
-            rt_id = match.group(1)
-        if rt_id and match:
-            category = self.external.get_ticket_category(rt_id)
         if not category:
             category = model.get_value(iter, 2)
+        if not category or category == DEFAULT_RT_CATEGORY:
+            if not rt_id and match:
+                rt_id = match.group(1)
+            if rt_id and match:
+                category = self.external.get_ticket_category(rt_id)
         if not category:
             category = ''
         return '@'.join([name, category])
