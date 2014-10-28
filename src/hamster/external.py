@@ -22,7 +22,7 @@ import logging
 from configuration import conf
 import gobject
 import re
-import dbus, dbus.mainloop.glib
+import dbus.mainloop.glib
 import json
 from lib import rt
 from lib import redmine
@@ -56,6 +56,7 @@ SOURCE_EVOLUTION = 'evo'
 SOURCE_RT = 'rt'
 SOURCE_REDMINE = 'redmine'
 SOURCE_JIRA = 'jira'
+JIRA_ISSUE_NAME_REGEX = "^#(\w+-\d+): "
     
 class ActivitiesSource(gobject.GObject):
     def __init__(self):
@@ -65,7 +66,7 @@ class ActivitiesSource(gobject.GObject):
         self.__gtg_connection = None
 
         if self.source == SOURCE_EVOLUTION and not evolution:
-            self.source == SOURCE_NONE # on failure pretend that there is no evolution
+            self.source = SOURCE_NONE # on failure pretend that there is no evolution
         elif self.source == SOURCE_GTG:
             gobject.GObject.__init__(self)
             dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)

@@ -40,6 +40,10 @@ from lib import stuff, trophies
 from overview_activities import OverviewBox
 from overview_totals import TotalsBox
 
+from external import JIRA_ISSUE_NAME_REGEX
+from external import SOURCE_RT
+from external import SOURCE_REDMINE
+from external import SOURCE_JIRA
 
 class Overview(gtk.Object):
     __gsignals__ = {
@@ -448,28 +452,32 @@ class Overview(gtk.Object):
         pass
     
     def on_start_activate(self, button):
-        to_report = filter(self.__is_rt_ticket, self.fact_tree.get_model())
+        to_report = []
+        if self.external.source == SOURCE_RT or self.external.source == SOURCE_REDMINE:
+            to_report = filter(self.__is_rt_ticket, self.fact_tree.get_model())
+        elif self.external.source == SOURCE_JIRA:
+            to_report = filter(self.__is_jira_ticket, self.fact_tree.get_model())
         to_report = [row[0].fact for row in to_report]
         dialogs.export_rt.show(self, facts = to_report)
         
-    def on_start_activate_2(self, button):
-        self.start_button.set_sensitive(False)
-        while gtk.events_pending(): 
-            gtk.main_iteration()
-#        runtime.storage.update_fact(fact_id, fact, temporary_activity, exported)
-        tree = self.fact_tree
-        to_report = filter(self.__is_rt_ticket, tree.get_model())
-        
-        for row in to_report:
-            self.__report(row[0])
-                
-        self.search()
-        while gtk.events_pending(): 
-            gtk.main_iteration()
-        self.start_button.set_sensitive(True)
+#     def on_start_activate_2(self, button):
+#         self.start_button.set_sensitive(False)
+#         while gtk.events_pending(): 
+#             gtk.main_iteration()
+# #        runtime.storage.update_fact(fact_id, fact, temporary_activity, exported)
+#         tree = self.fact_tree
+#         to_report = filter(self.__is_rt_ticket, tree.get_model())
+#         
+#         for row in to_report:
+#             self.__report(row[0])
+#                 
+#         self.search()
+#         while gtk.events_pending(): 
+#             gtk.main_iteration()
+#         self.start_button.set_sensitive(True)
         
     def __is_rt_ticket(self, row):
-        if not self.external.tracker:
+        if not self.external.rt:
             logging.warn("Not connected to/logged in RT")
             return False
         if not isinstance(row[0], FactRow):
@@ -477,6 +485,20 @@ class Overview(gtk.Object):
 #            self.__report(row[0])
         fact = row[0].fact
         match = re.match(TICKET_NAME_REGEX, fact.activity)
+        if row[0].selected and fact.end_time and match:
+            return True
+        else:
+            return False
+        
+    def __is_jira_ticket(self, row):
+        if not self.external.jira:
+            logging.warn("Not connected to/logged in JIRA")
+            return False
+        if not isinstance(row[0], FactRow):
+            return False
+#            self.__report(row[0])
+        fact = row[0].fact
+        match = re.match(JIRA_ISSUE_NAME_REGEX, fact.activity)
         if row[0].selected and fact.end_time and match:
             return True
         else:
