@@ -50,6 +50,12 @@ cache_regions.update({
     }
 })
 
+SOURCE_NONE = ""
+SOURCE_GTG = 'gtg'
+SOURCE_EVOLUTION = 'evo'
+SOURCE_RT = 'rt'
+SOURCE_REDMINE = 'redmine'
+SOURCE_JIRA = 'jira'
     
 class ActivitiesSource(gobject.GObject):
     def __init__(self):
@@ -58,12 +64,12 @@ class ActivitiesSource(gobject.GObject):
         self.source = conf.get("activities_source")
         self.__gtg_connection = None
 
-        if self.source == "evo" and not evolution:
-            self.source == "" # on failure pretend that there is no evolution
-        elif self.source == "gtg":
+        if self.source == SOURCE_EVOLUTION and not evolution:
+            self.source == SOURCE_NONE # on failure pretend that there is no evolution
+        elif self.source == SOURCE_GTG:
             gobject.GObject.__init__(self)
             dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-        elif self.source == "rt":
+        elif self.source == SOURCE_RT:
             self.rt_url = conf.get("rt_url")
             self.rt_user = conf.get("rt_user")
             self.rt_pass = conf.get("rt_pass")
@@ -73,13 +79,13 @@ class ActivitiesSource(gobject.GObject):
                 try:
                     self.tracker = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
                     if not self.tracker.login():
-                        self.source = ""
+                        self.source = SOURCE_NONE
                 except Exception as e:
                     logging.warn('rt login failed: '+str(e))
-                    self.source = ""
+                    self.source = SOURCE_NONE
             else:
-                self.source = ""
-        elif self.source == "redmine":
+                self.source = SOURCE_NONE
+        elif self.source == SOURCE_REDMINE:
             self.rt_url = conf.get("rt_url")
             self.rt_user = conf.get("rt_user")
             self.rt_pass = conf.get("rt_pass")
@@ -92,41 +98,42 @@ class ActivitiesSource(gobject.GObject):
                 try:
                     self.tracker = redmine.Redmine(self.rt_url, auth=(self.rt_user,self.rt_pass))
                     if not self.tracker:
-                        self.source = ""
+                        self.source = SOURCE_NONE
                 except:
-                    self.source = ""
+                    self.source = SOURCE_NONE
             else:
-                self.source = ""
-        elif jira_active and self.source == "jira":
-            self.rt_url = conf.get("jira_url")
-            self.rt_user = conf.get("jira_user")
-            self.rt_pass = conf.get("jira_pass")
-            self.rt_query = conf.get("jira_query")
-            self.rt_category = conf.get("jira_category_field")
-            if self.rt_url and self.rt_user and self.rt_pass:
+                self.source = SOURCE_NONE
+        elif jira_active and self.source == SOURCE_JIRA:
+            self.jira_url = conf.get("jira_url")
+            self.jira_user = conf.get("jira_user")
+            self.jira_pass = conf.get("jira_pass")
+            self.jira_query = conf.get("jira_query")
+            self.jira_category = conf.get("jira_category_field")
+            self.jira_fields=','.join(['summary', self.jira_category])
+            if self.jira_url and self.jira_user and self.jira_pass:
                 try:
-                    options = {'server': self.rt_url}
-                    self.tracker = JIRA(options, basic_auth = (self.rt_user, self.rt_pass), validate = True)
+                    options = {'server': self.jira_url}
+                    self.tracker = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)
                 except Exception as e:
                     logging.warn('jira connection failed: '+str(e))
-                    self.source = ""
+                    self.source = SOURCE_NONE
             else:
-                self.source = ""
+                self.source = SOURCE_NONE
         
     def get_activities(self, query = None):
         if not self.source:
             return []
 
-        if self.source == "evo":
+        if self.source == SOURCE_EVOLUTION:
             return [activity for activity in get_eds_tasks()
                          if query is None or activity['name'].startswith(query)]
-        elif self.source == "rt":
+        elif self.source == SOURCE_RT:
             activities = self.__extract_from_rt(query, self.rt_query)
             direct_ticket = None
             if query and re.match("^[0-9]+$", query):
                 ticket = self.tracker.get_ticket(query)
                 if ticket:
-                    direct_ticket = self.__extract_activity_from_ticket(ticket)
+                    direct_ticket = self.__extract_activity_from_rt_ticket(ticket)
             if direct_ticket:
                 activities.append(direct_ticket)
             if len(activities) <= 2 and not direct_ticket and len(query) > 4:
@@ -138,8 +145,8 @@ class ActivitiesSource(gobject.GObject):
                     activities.append({"name": "---------------------", "category": "other open"})
                 activities.extend(third_activities)
             return activities
-        elif self.source == "jira":
-            activities = self.__extract_from_jira(query, self.rt_query)
+        elif self.source == SOURCE_JIRA:
+            activities = self.__extract_from_jira(query, self.jira_query)
             direct_issue = None
             if query and re.match("^[A-Z]+-[0-9]+$", query):
                 issue = self.tracker.issue(query)
@@ -156,7 +163,7 @@ class ActivitiesSource(gobject.GObject):
                     activities.append({"name": "---------------------", "category": "other open"})
                 activities.extend(third_activities)
             return activities
-        elif self.source == "redmine":
+        elif self.source == SOURCE_REDMINE:
             activities = self.__extract_from_redmine(query, self.rt_query)
             direct_issue = None
             if query and re.match("^[0-9]+$", query):
@@ -173,7 +180,7 @@ class ActivitiesSource(gobject.GObject):
                     activities.append({"name": "---------------------", "category": "other open"})
                 activities.extend(third_activities)
             return activities
-        elif self.source == "gtg":
+        elif self.source == SOURCE_GTG:
             conn = self.__get_gtg_connection()
             if not conn:
                 return []
@@ -198,17 +205,25 @@ class ActivitiesSource(gobject.GObject):
 
             return activities
         
-    def get_ticket_category(self, ticket_id):
+    def get_ticket_category(self, activity_id):
+        """get activity category depends on source"""
         if not self.source:
             return ""
 
-        if self.source == "rt":
-            ticket = self.tracker.get_ticket(ticket_id)
+        if self.source == SOURCE_RT:
+            ticket = self.tracker.get_ticket(activity_id)
             return self.__extract_cat_from_ticket(ticket)
+        elif self.source == SOURCE_JIRA:
+            try: 
+                issue = self.tracker.issue(activity_id)
+                return self.__extract_activity_from_jira_issue(issue)
+            except Exception as e:
+                logging.warn(e)
+                return ""
         else:
             return ""
     
-    def __extract_activity_from_ticket(self, ticket):
+    def __extract_activity_from_rt_ticket(self, ticket):
         #activity = {}
         ticket_id = ticket['id']
         #logging.warn(ticket)
@@ -234,8 +249,8 @@ class ActivitiesSource(gobject.GObject):
         issue_id = issue.key
         activity['name'] = str(issue_id)+': '+issue.fields.summary
         activity['rt_id'] = issue_id
-        if hasattr(issue.fields, self.rt_category):
-            activity['category'] = getattr(issue.fields, self.rt_category)
+        if hasattr(issue.fields, self.jira_category):
+            activity['category'] = getattr(issue.fields, self.jira_category)
         else:
             activity['category'] = ""
         return activity
@@ -245,7 +260,7 @@ class ActivitiesSource(gobject.GObject):
 #         results = self.tracker.search_simple(rt_query)
         results = self.tracker.search_raw(rt_query, [self.rt_category])
         for ticket in results:
-            activity = self.__extract_activity_from_ticket(ticket)
+            activity = self.__extract_activity_from_rt_ticket(ticket)
             if query is None or not checkName or all(item in activity['name'].lower() for item in query.lower().split(' ')):
                 activities.append(activity)
         return activities
@@ -263,14 +278,14 @@ class ActivitiesSource(gobject.GObject):
         activities = []
         results = self.__search_jira_issues(jira_query)
         for issue in results:
-            activity = self.__extract_activity_from_jira_issue(issue)
+            activity = self.__extract_activity_from_jira_issue(issue, fields = self.jira_fields)
             if query is None or all(item in activity['name'].lower() for item in query.lower().split(' ')):
                 activities.append(activity)
         return activities
     
     @cache_region('short_term', '__extract_from_jira')
     def __search_jira_issues(self, jira_query = None):
-        return self.tracker.search_issues(jira_query, fields=','.join(['summary', self.rt_category]), maxResults=100)
+        return self.tracker.search_issues(jira_query, self.jira_fields, maxResults=100)
         
     def __extract_cat_from_ticket(self, ticket):
         category = DEFAULT_RT_CATEGORY
