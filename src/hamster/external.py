@@ -77,8 +77,8 @@ class ActivitiesSource(gobject.GObject):
             self.rt_category = conf.get("rt_category_field")
             if self.rt_url and self.rt_user and self.rt_pass:
                 try:
-                    self.tracker = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
-                    if not self.tracker.login():
+                    self.rt = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
+                    if not self.rt.login():
                         self.source = SOURCE_NONE
                 except Exception as e:
                     logging.warn('rt login failed: '+str(e))
@@ -96,8 +96,8 @@ class ActivitiesSource(gobject.GObject):
                 self.rt_query = ({})
             if self.rt_url and self.rt_user and self.rt_pass:
                 try:
-                    self.tracker = redmine.Redmine(self.rt_url, auth=(self.rt_user,self.rt_pass))
-                    if not self.tracker:
+                    self.redmine = redmine.Redmine(self.rt_url, auth=(self.rt_user,self.rt_pass))
+                    if not self.redmine:
                         self.source = SOURCE_NONE
                 except:
                     self.source = SOURCE_NONE
@@ -113,7 +113,7 @@ class ActivitiesSource(gobject.GObject):
             if self.jira_url and self.jira_user and self.jira_pass:
                 try:
                     options = {'server': self.jira_url}
-                    self.tracker = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)
+                    self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)
                 except Exception as e:
                     logging.warn('jira connection failed: '+str(e))
                     self.source = SOURCE_NONE
@@ -131,7 +131,7 @@ class ActivitiesSource(gobject.GObject):
             activities = self.__extract_from_rt(query, self.rt_query)
             direct_ticket = None
             if query and re.match("^[0-9]+$", query):
-                ticket = self.tracker.get_ticket(query)
+                ticket = self.rt.get_ticket(query)
                 if ticket:
                     direct_ticket = self.__extract_activity_from_rt_ticket(ticket)
             if direct_ticket:
@@ -149,7 +149,7 @@ class ActivitiesSource(gobject.GObject):
             activities = self.__extract_from_jira(query, self.jira_query)
             direct_issue = None
             if query and re.match("^[A-Z]+-[0-9]+$", query):
-                issue = self.tracker.issue(query)
+                issue = self.jira.issue(query)
                 if issue:
                     direct_issue = self.__extract_activity_from_jira_issue(issue)
             if direct_issue:
@@ -167,7 +167,7 @@ class ActivitiesSource(gobject.GObject):
             activities = self.__extract_from_redmine(query, self.rt_query)
             direct_issue = None
             if query and re.match("^[0-9]+$", query):
-                issue = self.tracker.getIssue(query)
+                issue = self.redmine.getIssue(query)
                 if issue:
                     direct_issue = self.__extract_activity_from_issue(issue)
             if direct_issue:
@@ -211,11 +211,11 @@ class ActivitiesSource(gobject.GObject):
             return ""
 
         if self.source == SOURCE_RT:
-            ticket = self.tracker.get_ticket(activity_id)
+            ticket = self.rt.get_ticket(activity_id)
             return self.__extract_cat_from_ticket(ticket)
         elif self.source == SOURCE_JIRA:
             try: 
-                issue = self.tracker.issue(activity_id)
+                issue = self.jira.issue(activity_id)
                 return self.__extract_activity_from_jira_issue(issue)
             except Exception as e:
                 logging.warn(e)
@@ -257,8 +257,8 @@ class ActivitiesSource(gobject.GObject):
 
     def __extract_from_rt(self, query = None, rt_query = None, checkName = True):
         activities = []
-#         results = self.tracker.search_simple(rt_query)
-        results = self.tracker.search_raw(rt_query, [self.rt_category])
+#         results = self.rt.search_simple(rt_query)
+        results = self.rt.search_raw(rt_query, [self.rt_category])
         for ticket in results:
             activity = self.__extract_activity_from_rt_ticket(ticket)
             if query is None or not checkName or all(item in activity['name'].lower() for item in query.lower().split(' ')):
@@ -267,7 +267,7 @@ class ActivitiesSource(gobject.GObject):
         
     def __extract_from_redmine(self, query = None, rt_query = None):
         activities = []
-        results = self.tracker.getIssues(rt_query)
+        results = self.redmine.getIssues(rt_query)
         for issue in results:
             activity = self.__extract_activity_from_issue(issue)
             if query is None or all(item in activity['name'].lower() for item in query.lower().split(' ')):
@@ -285,7 +285,7 @@ class ActivitiesSource(gobject.GObject):
     
     @cache_region('short_term', '__extract_from_jira')
     def __search_jira_issues(self, jira_query = None):
-        return self.tracker.search_issues(jira_query, self.jira_fields, maxResults=100)
+        return self.jira.search_issues(jira_query, self.jira_fields, maxResults=100)
         
     def __extract_cat_from_ticket(self, ticket):
         category = DEFAULT_RT_CATEGORY
