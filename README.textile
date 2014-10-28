@@ -5,6 +5,7 @@ h1. Dependencies
 
 Debian-based: @apt-get install git-core gettext intltool python-gconf python-requests python-beaker python-wnck gir1.2-gconf-2.0@
 RPM-based: @yum install git-core gettext intltool gnome-python2-gconf python-requests python-beaker python-wnck gir1.2-gconf-2.0@
+Other: @pip install jira@
 
 h1. Installing
 
