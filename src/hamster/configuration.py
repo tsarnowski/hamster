@@ -192,6 +192,14 @@ class GConfStore(gobject.GObject, Singleton):
         'rt_query'                    :   "Owner='__CurrentUser__' AND (Status='new' OR Status='open')",          # RT query for autocomplete
         'rt_category_field'           :   "CF.{Projekt}",
         'remote_activities_only'          :   True, # only remote activities if available
+        'jira_url'                      :   "https://jira.unity.pl",
+        'jira_user'                     :   "",          # 
+        'jira_pass'                     :   "",          # 
+        'jira_query'                    :   "resolution = Unresolved AND assignee = currentUser()",
+        'jira_category_field'           :   "customfield_10000",
+#         from jira.client import JIRA
+#         jira = JIRA(options={'server':'https://jira.unity.pl'}, basic_auth=('gsobczyk', 'secret!'))
+
     }
 
     __gsignals__ = {

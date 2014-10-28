@@ -98,11 +98,11 @@ class ActivitiesSource(gobject.GObject):
             else:
                 self.source = ""
         elif jira_active and self.source == "jira":
-            self.rt_url = conf.get("rt_url")
-            self.rt_user = conf.get("rt_user")
-            self.rt_pass = conf.get("rt_pass")
-            self.rt_query = conf.get("rt_query")
-            self.rt_category = conf.get("rt_category_field")
+            self.rt_url = conf.get("jira_url")
+            self.rt_user = conf.get("jira_user")
+            self.rt_pass = conf.get("jira_pass")
+            self.rt_query = conf.get("jira_query")
+            self.rt_category = conf.get("jira_category_field")
             if self.rt_url and self.rt_user and self.rt_pass:
                 try:
                     options = {'server': self.rt_url}
