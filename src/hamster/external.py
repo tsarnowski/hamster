@@ -56,7 +56,7 @@ SOURCE_EVOLUTION = 'evo'
 SOURCE_RT = 'rt'
 SOURCE_REDMINE = 'redmine'
 SOURCE_JIRA = 'jira'
-JIRA_ISSUE_NAME_REGEX = "^#(\w+-\d+): "
+JIRA_ISSUE_NAME_REGEX = "^(\w+-\d+): "
     
 class ActivitiesSource(gobject.GObject):
     def __init__(self):
@@ -64,6 +64,9 @@ class ActivitiesSource(gobject.GObject):
         gobject.GObject.__init__(self)
         self.source = conf.get("activities_source")
         self.__gtg_connection = None
+        self.rt = None
+        self.redmine = None
+        self.jira = None
 
         if self.source == SOURCE_EVOLUTION and not evolution:
             self.source = SOURCE_NONE # on failure pretend that there is no evolution
@@ -114,7 +117,7 @@ class ActivitiesSource(gobject.GObject):
             if self.jira_url and self.jira_user and self.jira_pass:
                 try:
                     options = {'server': self.jira_url}
-                    self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)
+                    self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = False)
                 except Exception as e:
                     logging.warn('jira connection failed: '+str(e))
                     self.source = SOURCE_NONE
@@ -122,7 +125,7 @@ class ActivitiesSource(gobject.GObject):
                 self.source = SOURCE_NONE
         
     def get_activities(self, query = None):
-        if not self.source:
+        if not self.source or not query:
             return []
 
         if self.source == SOURCE_EVOLUTION:
@@ -215,12 +218,12 @@ class ActivitiesSource(gobject.GObject):
             ticket = self.rt.get_ticket(activity_id)
             return self.__extract_cat_from_ticket(ticket)
         elif self.source == SOURCE_JIRA:
-            try: 
+#             try: 
                 issue = self.jira.issue(activity_id)
                 return self.__extract_activity_from_jira_issue(issue)
-            except Exception as e:
-                logging.warn(e)
-                return ""
+#             except Exception as e:
+#                 logging.warn(e)
+#                 return ""
         else:
             return ""
     
@@ -277,16 +280,19 @@ class ActivitiesSource(gobject.GObject):
         
     def __extract_from_jira(self, query = None, jira_query = None):
         activities = []
-        results = self.__search_jira_issues(jira_query)
-        for issue in results:
-            activity = self.__extract_activity_from_jira_issue(issue, fields = self.jira_fields)
-            if query is None or all(item in activity['name'].lower() for item in query.lower().split(' ')):
-                activities.append(activity)
+        try:
+            results = self.__search_jira_issues(jira_query)
+            for issue in results:
+                activity = self.__extract_activity_from_jira_issue(issue)
+                if query is None or all(item in activity['name'].lower() for item in query.lower().split(' ')):
+                    activities.append(activity)
+        except Exception as e:
+            logging.warn(e)
         return activities
     
     @cache_region('short_term', '__extract_from_jira')
     def __search_jira_issues(self, jira_query = None):
-        return self.jira.search_issues(jira_query, self.jira_fields, maxResults=100)
+        return self.jira.search_issues(jira_query, fields = self.jira_fields, maxResults = 100)
         
     def __extract_cat_from_ticket(self, ticket):
         category = DEFAULT_RT_CATEGORY

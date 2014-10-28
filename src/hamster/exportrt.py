@@ -29,6 +29,7 @@ from external import SOURCE_NONE
 from external import SOURCE_RT
 from external import SOURCE_REDMINE
 from external import SOURCE_JIRA
+from external import JIRA_ISSUE_NAME_REGEX
 from configuration import conf, runtime, load_ui_file
 
 jira_active = True
@@ -41,8 +42,12 @@ except:
 class ExportRow(object):
     def __init__(self, fact):
         self.fact = fact
-        match = re.match(TICKET_NAME_REGEX, fact.activity)
-        self.id = match.group(1)
+        rt_match = re.match(TICKET_NAME_REGEX, fact.activity)
+        if rt_match:
+            self.id = rt_match.group(1)
+        jira_match = re.match(JIRA_ISSUE_NAME_REGEX, fact.activity)
+        if jira_match:
+            self.id = jira_match.group(1)
         self.comment = self.get_text(fact)
         self.date = self.get_date(fact)
         self.time_worked = stuff.duration_minutes(fact.delta)
@@ -147,6 +152,9 @@ class ExportRtController(gtk.Object):
         gtk.Object.__init__(self)
         
         self.source = conf.get("activities_source")
+        self.rt = None
+        self.redmine = None
+        self.jira = None
 
         if self.source == SOURCE_RT:
 #            Init RT
@@ -213,13 +221,13 @@ class ExportRtController(gtk.Object):
                 issue = self.redmine.getIssue(issue_id)
                 row_data = {}
                 row_data['id'] = issue.id
-                row_data['Subject'] = issue.subject
+                row_data['Subject'] = str(issue_id)+': '+issue.fields.summary
 #                 row_data['source'] = SOURCE_REDMINE
             elif self.source == SOURCE_JIRA:
                 issue = self.jira.issue(issue_id)
                 row_data = {}
                 row_data['id'] = issue.id
-                row_data['Subject'] = '#'+str(issue_id)+': '+issue.subject
+                row_data['Subject'] = issue.fields.summary
 #                 row_data['source'] = SOURCE_JIRA
 
             if row_data:
@@ -284,7 +292,7 @@ class ExportRtController(gtk.Object):
         self.window.show()
         
     def on_start_activate(self, button):
-        if self.rt or self.redmine:
+        if self.rt or self.redmine or self.jira:
             group_comments = self.aggregate_comments_checkbox.get_active()
             it = self.tree_store.get_iter_first()
             to_report_list = []

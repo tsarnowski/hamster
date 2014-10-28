@@ -149,6 +149,28 @@ class PreferencesEditor(gtk.Object):
         self.rt_category_field = gtk.Entry()
         self.rt_category_field.connect("changed", self.on_rt_category_field_changed)
         self.get_widget('rt_category_field').add(self.rt_category_field)
+        
+        # JIRA prefs
+        self.jira_url = gtk.Entry()
+        self.jira_url.connect("changed", self.on_jira_url_changed)
+        self.get_widget('jira_url').add(self.jira_url)
+        
+        self.jira_user = gtk.Entry()
+        self.jira_user.connect("changed", self.on_jira_user_changed)
+        self.get_widget('jira_user').add(self.jira_user)
+        
+        self.jira_pass = gtk.Entry()
+        self.jira_pass.set_visibility(False)
+        self.jira_pass.connect("changed", self.on_jira_pass_changed)
+        self.get_widget('jira_pass').add(self.jira_pass)
+        
+        self.jira_query = gtk.Entry()
+        self.jira_query.connect("changed", self.on_jira_query_changed)
+        self.get_widget('jira_query').add(self.jira_query)
+        
+        self.jira_category_field = gtk.Entry()
+        self.jira_category_field.connect("changed", self.on_jira_category_field_changed)
+        self.get_widget('jira_category_field').add(self.jira_category_field)
 
         # create and fill activity tree
         self.activity_tree = self.get_widget('activity_list')
@@ -309,6 +331,23 @@ class PreferencesEditor(gtk.Object):
         
     def on_rt_category_field_changed(self, entry):
         conf.set('rt_category_field', self.rt_category_field.get_text())
+        
+        
+
+    def on_jira_url_changed(self, entry):
+        conf.set('jira_url', self.jira_url.get_text())
+
+    def on_jira_user_changed(self, entry):
+        conf.set('jira_user', self.jira_user.get_text())
+
+    def on_jira_pass_changed(self, entry):
+        conf.set('jira_pass', self.jira_pass.get_text())
+
+    def on_jira_query_changed(self, entry):
+        conf.set('jira_query', self.jira_query.get_text())
+        
+    def on_jira_category_field_changed(self, entry):
+        conf.set('jira_category_field', self.jira_category_field.get_text())
 
     def on_todo_combo_changed(self, combo):
         conf.set("activities_source", self.activities_sources[combo.get_active()][0])
@@ -377,6 +416,12 @@ class PreferencesEditor(gtk.Object):
         self.rt_pass.set_text(conf.get('rt_pass'))
         self.rt_query.set_text(conf.get('rt_query'))
         self.rt_category_field.set_text(conf.get('rt_category_field'))
+        
+        self.jira_url.set_text(conf.get('jira_url'))
+        self.jira_user.set_text(conf.get('jira_user'))
+        self.jira_pass.set_text(conf.get('jira_pass'))
+        self.jira_query.set_text(conf.get('jira_query'))
+        self.jira_category_field.set_text(conf.get('jira_category_field'))
         
         self.get_widget("icon_glow").set_active(conf.get("icon_glow"))
         self.get_widget("show_label").set_active(conf.get("show_label"))

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkAdjustment" id="adjustment1">
     <property name="lower">1</property>
     <property name="upper">121</property>
@@ -72,13 +73,11 @@
                             <child>
                               <object class="GtkCheckButton" id="shutdown_track">
                                 <property name="label" translatable="yes">Stop tracking on shutdown</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="xalign">0.5</property>
                                 <property name="draw_indicator">True</property>
                                 <signal name="toggled" handler="on_shutdown_track_toggled" swapped="no"/>
                               </object>
@@ -91,13 +90,11 @@
                             <child>
                               <object class="GtkCheckButton" id="idle_track">
                                 <property name="label" translatable="yes">Stop tracking when computer becomes idle</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="xalign">0.5</property>
                                 <property name="draw_indicator">True</property>
                                 <signal name="toggled" handler="on_idle_track_toggled" swapped="no"/>
                               </object>
@@ -150,13 +147,11 @@
                                             <child>
                                               <object class="GtkCheckButton" id="notify_on_idle">
                                                 <property name="label" translatable="yes">Also remind when no activity is set</property>
-                                                <property name="use_action_appearance">False</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">False</property>
                                                 <property name="use_action_appearance">False</property>
                                                 <property name="use_underline">True</property>
-                                                <property name="xalign">0.5</property>
                                                 <property name="draw_indicator">True</property>
                                                 <signal name="toggled" handler="on_notify_on_idle_toggled" swapped="no"/>
                                               </object>
@@ -294,6 +289,23 @@
                                   </packing>
                                 </child>
                                 <child>
+                                  <object class="GtkCheckButton" id="remote_activities_only">
+                                    <property name="label" translatable="yes">Use only remote activities if available</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">False</property>
+                                    <property name="use_action_appearance">False</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_indicator">True</property>
+                                    <signal name="toggled" handler="on_remote_activities_only_toggled" swapped="no"/>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
                                   <object class="GtkHBox" id="hbox5">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
@@ -328,7 +340,7 @@
                                   <packing>
                                     <property name="expand">True</property>
                                     <property name="fill">True</property>
-                                    <property name="position">1</property>
+                                    <property name="position">2</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -366,7 +378,7 @@
                                   <packing>
                                     <property name="expand">True</property>
                                     <property name="fill">True</property>
-                                    <property name="position">2</property>
+                                    <property name="position">3</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -404,7 +416,7 @@
                                   <packing>
                                     <property name="expand">True</property>
                                     <property name="fill">True</property>
-                                    <property name="position">3</property>
+                                    <property name="position">4</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -442,10 +454,9 @@
                                   <packing>
                                     <property name="expand">True</property>
                                     <property name="fill">True</property>
-                                    <property name="position">4</property>
+                                    <property name="position">5</property>
                                   </packing>
                                 </child>
-                                
                                 <child>
                                   <object class="GtkHBox" id="hbox9">
                                     <property name="visible">True</property>
@@ -481,28 +492,197 @@
                                   <packing>
                                     <property name="expand">True</property>
                                     <property name="fill">True</property>
-                                    <property name="position">5</property>
+                                    <property name="position">6</property>
                                   </packing>
                                 </child>
-                                
-                                
                                 <child>
-                                  <object class="GtkCheckButton" id="remote_activities_only">
-                                    <property name="label" translatable="yes">Use only remote activities if available</property>
-                                    <property name="use_action_appearance">False</property>
+                                  <object class="GtkHBox" id="hbox14">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="use_action_appearance">False</property>
-                                    <property name="use_underline">True</property>
-                                    <property name="xalign">0.5</property>
-                                    <property name="draw_indicator">True</property>
-                                    <signal name="toggled" handler="on_remote_activities_only_toggled" swapped="no"/>
+                                    <property name="can_focus">False</property>
+                                    <child>
+                                      <object class="GtkLabel" id="label21">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="label" translatable="yes">JIRA url:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">4</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkAlignment" id="jira_url">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                   <packing>
-                                    <property name="expand">False</property>
+                                    <property name="expand">True</property>
                                     <property name="fill">True</property>
-                                    <property name="position">6</property>
+                                    <property name="position">7</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkHBox" id="hbox13">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <child>
+                                      <object class="GtkLabel" id="label20">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="label" translatable="yes">JIRA user:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">4</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkAlignment" id="jira_user">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">8</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkHBox" id="hbox12">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <child>
+                                      <object class="GtkLabel" id="label19">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="label" translatable="yes">JIRA password:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">4</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkAlignment" id="jira_pass">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">9</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkHBox" id="hbox11">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <child>
+                                      <object class="GtkLabel" id="label18">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="label" translatable="yes">JIRA query:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">4</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkAlignment" id="jira_query">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">10</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkHBox" id="hbox10">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <child>
+                                      <object class="GtkLabel" id="label17">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="label" translatable="yes">JIRA category field:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">4</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkAlignment" id="jira_category_field">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">11</property>
                                   </packing>
                                 </child>
                               </object>
@@ -609,9 +789,6 @@
                                         <signal name="key-press-event" handler="on_category_list_key_pressed" swapped="no"/>
                                         <signal name="drag-motion" handler="on_category_list_drag_motion" swapped="no"/>
                                         <signal name="button-release-event" handler="on_category_list_button_released" swapped="no"/>
-                                        <child internal-child="selection">
-                                          <object class="GtkTreeSelection" id="treeview-selection1"/>
-                                        </child>
                                       </object>
                                     </child>
                                   </object>
@@ -628,7 +805,6 @@
                                     <property name="spacing">4</property>
                                     <child>
                                       <object class="GtkButton" id="category_add">
-                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -655,7 +831,6 @@
                                     </child>
                                     <child>
                                       <object class="GtkButton" id="category_remove">
-                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -682,7 +857,6 @@
                                     </child>
                                     <child>
                                       <object class="GtkButton" id="category_edit">
-                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -772,9 +946,6 @@
                                             <signal name="button-press-event" handler="on_activity_list_button_pressed" swapped="no"/>
                                             <signal name="key-press-event" handler="on_activity_list_key_pressed" swapped="no"/>
                                             <signal name="button-release-event" handler="on_activity_list_button_released" swapped="no"/>
-                                            <child internal-child="selection">
-                                              <object class="GtkTreeSelection" id="treeview-selection2"/>
-                                            </child>
                                           </object>
                                         </child>
                                       </object>
@@ -793,7 +964,6 @@
                                     <property name="spacing">4</property>
                                     <child>
                                       <object class="GtkButton" id="activity_add">
-                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -820,7 +990,6 @@
                                     </child>
                                     <child>
                                       <object class="GtkButton" id="activity_remove">
-                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -847,7 +1016,6 @@
                                     </child>
                                     <child>
                                       <object class="GtkButton" id="activity_edit">
-                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -1112,12 +1280,10 @@
                             <child>
                               <object class="GtkCheckButton" id="workspace_tracking_memory">
                                 <property name="label" translatable="yes">Resume the last activity when returning to a workspace</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="use_action_appearance">False</property>
-                                <property name="xalign">0.5</property>
                                 <property name="draw_indicator">True</property>
                                 <signal name="toggled" handler="on_workspace_tracking_toggled" swapped="no"/>
                               </object>
@@ -1134,12 +1300,10 @@
                                 <child>
                                   <object class="GtkCheckButton" id="workspace_tracking_name">
                                     <property name="label" translatable="yes">Start new activity when switching workspaces:</property>
-                                    <property name="use_action_appearance">False</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
                                     <property name="use_action_appearance">False</property>
-                                    <property name="xalign">0.5</property>
                                     <property name="draw_indicator">True</property>
                                     <signal name="toggled" handler="on_workspace_tracking_toggled" swapped="no"/>
                                   </object>
@@ -1164,9 +1328,6 @@
                                           <object class="GtkTreeView" id="workspace_list">
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
-                                            <child internal-child="selection">
-                                              <object class="GtkTreeSelection" id="treeview-selection3"/>
-                                            </child>
                                           </object>
                                         </child>
                                       </object>
@@ -1233,7 +1394,6 @@
             <child>
               <object class="GtkButton" id="close_button">
                 <property name="label">gtk-close</property>
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>

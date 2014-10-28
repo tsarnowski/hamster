@@ -19,7 +19,7 @@
 
 
 import pygtk
-from hamster.widgets.facttree import FactTree, GroupRow, FactRow
+from hamster.widgets.facttree import FactRow
 from lib.rt import TICKET_NAME_REGEX
 pygtk.require('2.0')
 
