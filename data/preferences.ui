@@ -487,8 +487,8 @@
                                 
                                 
                                 <child>
-                                  <object class="GtkCheckButton" id="rt_activities_only">
-                                    <property name="label" translatable="yes">Use only remote activities</property>
+                                  <object class="GtkCheckButton" id="remote_activities_only">
+                                    <property name="label" translatable="yes">Use only remote activities if available</property>
                                     <property name="use_action_appearance">False</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -497,7 +497,7 @@
                                     <property name="use_underline">True</property>
                                     <property name="xalign">0.5</property>
                                     <property name="draw_indicator">True</property>
-                                    <signal name="toggled" handler="on_rt_activities_only_toggled" swapped="no"/>
+                                    <signal name="toggled" handler="on_remote_activities_only_toggled" swapped="no"/>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>

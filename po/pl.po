@@ -359,8 +359,8 @@ msgid "RT category field:"
 msgstr "Pole kategorii RT:"
 
 #: ../data/preferences.ui.h:13
-msgid "Use only remote activities"
-msgstr "Używaj tylko zdalnych aktywności"
+msgid "Use only remote activities if available"
+msgstr "Używaj tylko zdalnych aktywności jeśli dostępne"
 
 #: ../data/preferences.ui.h:14
 msgid "Integration"
