@@ -67,6 +67,7 @@ class ActivitiesSource(gobject.GObject):
         self.rt = None
         self.redmine = None
         self.jira = None
+        self.jira_projects = None
 
         if self.source == SOURCE_EVOLUTION and not evolution:
             self.source = SOURCE_NONE # on failure pretend that there is no evolution
@@ -118,6 +119,7 @@ class ActivitiesSource(gobject.GObject):
                 try:
                     options = {'server': self.jira_url}
                     self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = False)
+                    self.jira_projects = self.__get_jira_projects()
                 except Exception as e:
                     logging.warn('jira connection failed: '+str(e))
                     self.source = SOURCE_NONE
@@ -160,7 +162,8 @@ class ActivitiesSource(gobject.GObject):
                 activities.append(direct_issue)
             if len(activities) <= 2 and not direct_issue and len(query) > 4:
                 li = query.split(' ')
-                jira_query = " AND ".join(["(assignee = '%s' OR summary ~ '%s*')" % (q, q) for q in li]) + " AND resolution = Unresolved order by priority desc, updated desc"
+                fragments = [self.__generate_fragment_jira_query(word) for word in li]
+                jira_query = " AND ".join(fragments) + " AND resolution = Unresolved order by priority desc, updated desc"
                 #logging.warn(rt_query)
                 third_activities = self.__extract_from_jira('', jira_query)
                 if activities and third_activities:
@@ -208,6 +211,12 @@ class ActivitiesSource(gobject.GObject):
                     activities.append({"name": name, "category": ""})
 
             return activities
+        
+    def __generate_fragment_jira_query(self, word):
+        if word.upper() in self.jira_projects:
+            return "project = " + word.upper()
+        else:
+            return "(assignee = '%s' OR summary ~ '%s*')" % (word, word)
         
     def get_ticket_category(self, activity_id):
         """get activity category depends on source"""
@@ -289,6 +298,9 @@ class ActivitiesSource(gobject.GObject):
         except Exception as e:
             logging.warn(e)
         return activities
+    
+    def __get_jira_projects(self):
+        return [project.key for project in self.jira.projects()]
     
     @cache_region('short_term', '__extract_from_jira')
     def __search_jira_issues(self, jira_query = None):
