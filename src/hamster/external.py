@@ -44,7 +44,7 @@ except:
 # configure regions
 cache_regions.update({
     'short_term':{
-        'expire': 60,
+        'expire': 60*1000,
         'type': 'memory',
         'key_length': 250
     }
