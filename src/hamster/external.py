@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Project Hamster.  If not, see <http://www.gnu.org/licenses/>.
 
+import gtk
 import logging
 from configuration import conf
 import gobject
@@ -57,6 +58,7 @@ SOURCE_RT = 'rt'
 SOURCE_REDMINE = 'redmine'
 SOURCE_JIRA = 'jira'
 JIRA_ISSUE_NAME_REGEX = "^(\w+-\d+): "
+ERROR_ADDITIONAL_MESSAGE = '\n\nCheck settings and reopen main window.'
     
 class ActivitiesSource(gobject.GObject):
     def __init__(self):
@@ -86,7 +88,9 @@ class ActivitiesSource(gobject.GObject):
                     if not self.rt.login():
                         self.source = SOURCE_NONE
                 except Exception as e:
-                    logging.warn('rt login failed: '+str(e))
+                    error_msg = 'rt login failed: ' + str(e)
+                    self.on_error(error_msg + ERROR_ADDITIONAL_MESSAGE)
+                    logging.warn(error_msg)
                     self.source = SOURCE_NONE
             else:
                 self.source = SOURCE_NONE
@@ -121,7 +125,9 @@ class ActivitiesSource(gobject.GObject):
                     self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = False)
                     self.jira_projects = self.__get_jira_projects()
                 except Exception as e:
-                    logging.warn('jira connection failed: '+str(e))
+                    error_msg = 'jira connection failed: ' + str(e)
+                    self.on_error(error_msg + ERROR_ADDITIONAL_MESSAGE)
+                    logging.warn(error_msg)
                     self.source = SOURCE_NONE
             else:
                 self.source = SOURCE_NONE
@@ -330,6 +336,13 @@ class ActivitiesSource(gobject.GObject):
             return self.__gtg_connection
         else:
             return None
+    
+    def on_error(self, msg):
+        md = gtk.MessageDialog(None, 
+            gtk.DIALOG_DESTROY_WITH_PARENT, gtk.MESSAGE_ERROR, 
+            gtk.BUTTONS_CLOSE, msg)
+        md.run()
+        md.destroy()
 
 
 

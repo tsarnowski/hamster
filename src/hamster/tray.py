@@ -280,6 +280,7 @@ class ProjectHamsterStatusIconUnity():
                 for fact in groups[category]:
                     menu_item = gtk.MenuItem(fact.serialized_name_for_menu())
                     menu_item.connect("activate", self.on_last_activity_activated, fact.serialized_name())
+#                    it doesn't work because ubuntu doesn't support it 
 #                    menu_item.connect("scroll-event", self.on_last_activity_scroll_event, fact)
                     self.last_activities_menu.append(menu_item)
                     menu_item.show()

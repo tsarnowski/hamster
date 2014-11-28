@@ -355,6 +355,8 @@ class ActivityEntry(gtk.Entry):
                 return False
         elif event.keyval in (gtk.keysyms.Up, gtk.keysyms.Down):
             return False
+        elif event.keyval == gtk.keysyms.space and event.state & gtk.gdk.CONTROL_MASK == gtk.gdk.CONTROL_MASK:
+            self._populate_and_show()
         else:
             self._populate_and_show_delayed()
 
