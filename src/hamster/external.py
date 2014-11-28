@@ -161,8 +161,8 @@ class ActivitiesSource(gobject.GObject):
         elif self.source == SOURCE_JIRA:
             activities = self.__extract_from_jira(query, self.jira_query)
             direct_issue = None
-            if query and re.match("^[A-Z]+-[0-9]+$", query):
-                issue = self.jira.issue(query)
+            if query and re.match("^[a-zA-Z]+-[0-9]+$", query):
+                issue = self.jira.issue(query.upper())
                 if issue:
                     direct_issue = self.__extract_activity_from_jira_issue(issue)
             if direct_issue:
