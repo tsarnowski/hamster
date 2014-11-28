@@ -70,6 +70,7 @@ class ActivitiesSource(gobject.GObject):
         self.redmine = None
         self.jira = None
         self.jira_projects = None
+        self.jira_query = None
 
         if self.source == SOURCE_EVOLUTION and not evolution:
             self.source = SOURCE_NONE # on failure pretend that there is no evolution
