@@ -59,6 +59,7 @@ SOURCE_REDMINE = 'redmine'
 SOURCE_JIRA = 'jira'
 JIRA_ISSUE_NAME_REGEX = "^(\w+-\d+): "
 ERROR_ADDITIONAL_MESSAGE = '\n\nCheck settings and reopen main window.'
+MIN_QUERY_LENGTH = 4
     
 class ActivitiesSource(gobject.GObject):
     def __init__(self):
@@ -149,7 +150,7 @@ class ActivitiesSource(gobject.GObject):
                     direct_ticket = self.__extract_activity_from_rt_ticket(ticket)
             if direct_ticket:
                 activities.append(direct_ticket)
-            if len(activities) <= 2 and not direct_ticket and len(query) > 4:
+            if len(activities) <= 2 and not direct_ticket and len(query) >= MIN_QUERY_LENGTH:
                 li = query.split(' ')
                 rt_query = " AND ".join(["(Subject LIKE '%s' OR Owner='%s')" % (q, q) for q in li]) + " AND (Status='new' OR Status='open')"
                 #logging.warn(rt_query)
@@ -167,7 +168,7 @@ class ActivitiesSource(gobject.GObject):
                     direct_issue = self.__extract_activity_from_jira_issue(issue)
             if direct_issue:
                 activities.append(direct_issue)
-            if len(activities) <= 2 and not direct_issue and len(query) > 4:
+            if len(activities) <= 2 and not direct_issue and len(query) >= MIN_QUERY_LENGTH:
                 li = query.split(' ')
                 fragments = [self.__generate_fragment_jira_query(word) for word in li]
                 jira_query = " AND ".join(fragments) + " AND resolution = Unresolved order by priority desc, updated desc"
@@ -186,7 +187,7 @@ class ActivitiesSource(gobject.GObject):
                     direct_issue = self.__extract_activity_from_issue(issue)
             if direct_issue:
                 activities.append(direct_issue)
-            if len(activities) <= 2 and not direct_issue and len(query) > 4:
+            if len(activities) <= 2 and not direct_issue and len(query) >= MIN_QUERY_LENGTH:
                 rt_query = ({'status_id': 'open', 'subject': query})
                 #logging.warn(rt_query)
                 third_activities = self.__extract_from_redmine(query, rt_query)
