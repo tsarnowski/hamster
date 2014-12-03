@@ -268,7 +268,7 @@ class ActivitiesSource(gobject.GObject):
     def __extract_activity_from_jira_issue(self, issue):
         activity = {}
         issue_id = issue.key
-        activity['name'] = str(issue_id)+': '+issue.fields.summary
+        activity['name'] = str(issue_id)+': '+issue.fields.summary.replace(",", " ")
         activity['rt_id'] = issue_id
         if hasattr(issue.fields, self.jira_category):
             activity['category'] = getattr(issue.fields, self.jira_category)
