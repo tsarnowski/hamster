@@ -23,7 +23,7 @@ import re
 
 from ..configuration import runtime, conf
 from ..lib import Fact, stuff, graphics
-from .. import external
+# from .. import external
 from ..lib.rt import TICKET_NAME_REGEX
 from ..lib.rt import DEFAULT_RT_CATEGORY
 
@@ -41,7 +41,7 @@ class ActivityEntry(gtk.Entry):
         self.filter = None
         self.timeout_id = None
         self.max_results = 10 # limit popup size to 10 results
-        self.external = external.ActivitiesSource()
+#         self.external = external.ActivitiesSource()
 
         self.popup = gtk.Window(type = gtk.WINDOW_POPUP)
 
@@ -233,7 +233,7 @@ class ActivityEntry(gtk.Entry):
 
         # do not cache as ordering and available options change over time
         self.activities = runtime.storage.get_activities(fact.activity)
-        self.external_activities = self.external.get_activities(fact.activity)
+        self.external_activities = runtime.get_external().get_activities(fact.activity)
         new_activities = []
         for activity in self.activities:
             match = re.match("^(#\d+: )", activity['name'])
@@ -414,7 +414,7 @@ class ActivityEntry(gtk.Entry):
             if not rt_id and match:
                 rt_id = match.group(1)
             if rt_id and match:
-                category = self.external.get_ticket_category(rt_id)
+                category = runtime.get_external().get_ticket_category(rt_id)
         if not category:
             category = ''
         return '@'.join([name, category])

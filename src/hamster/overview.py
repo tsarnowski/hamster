@@ -88,7 +88,7 @@ class Overview(gtk.Object):
         ]
         
         
-        self.external = external.ActivitiesSource()
+#         self.external = external.ActivitiesSource()
         
         self.show()
 
@@ -453,9 +453,9 @@ class Overview(gtk.Object):
     
     def on_start_activate(self, button):
         to_report = []
-        if self.external.source == SOURCE_RT or self.external.source == SOURCE_REDMINE:
+        if runtime.get_external().source == SOURCE_RT or runtime.get_external().source == SOURCE_REDMINE:
             to_report = filter(self.__is_rt_ticket, self.fact_tree.get_model())
-        elif self.external.source == SOURCE_JIRA:
+        elif runtime.get_external().source == SOURCE_JIRA:
             to_report = filter(self.__is_jira_ticket, self.fact_tree.get_model())
         to_report = [row[0].fact for row in to_report]
         dialogs.export_rt.show(self, facts = to_report)
@@ -477,7 +477,7 @@ class Overview(gtk.Object):
 #         self.start_button.set_sensitive(True)
         
     def __is_rt_ticket(self, row):
-        if not self.external.rt:
+        if not runtime.get_external().rt:
             logging.warn("Not connected to/logged in RT")
             return False
         if not isinstance(row[0], FactRow):
@@ -491,7 +491,7 @@ class Overview(gtk.Object):
             return False
         
     def __is_jira_ticket(self, row):
-        if not self.external.jira:
+        if not runtime.get_external().jira:
             logging.warn("Not connected to/logged in JIRA")
             return False
         if not isinstance(row[0], FactRow):
@@ -507,7 +507,7 @@ class Overview(gtk.Object):
     def __report(self, fact_row):
         fact = fact_row.fact
         logging.warn(fact_row.name)
-        if self.external.tracker:
+        if runtime.get_external().tracker:
             match = re.match(TICKET_NAME_REGEX, fact.activity)
 #            if not fact_row.selected:
 #                logging.warn("Row not selected: %s" % fact.activity)
@@ -515,7 +515,7 @@ class Overview(gtk.Object):
                 ticket_id = match.group(1)
                 text = self.get_text(fact)
                 time_worked = stuff.duration_minutes(fact.delta)
-                if self.external.tracker.comment(ticket_id, text, time_worked):
+                if runtime.get_external().tracker.comment(ticket_id, text, time_worked):
                     logging.warn("updated ticket #%s: %s - %s min" % (ticket_id, text, time_worked))
                     runtime.storage.update_fact(fact.id, fact, False,True)
                     fact_row.selected = False

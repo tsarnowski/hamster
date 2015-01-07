@@ -24,13 +24,12 @@ License: GPLv2
 
 import gconf
 import os
+from external import ActivitiesSource
 from client import Storage
 from xdg.BaseDirectory import xdg_data_home
 import logging
-import datetime as dt
 import gobject, gtk
 
-import logging
 log = logging.getLogger("configuration")
 
 class Singleton(object):
@@ -50,6 +49,8 @@ class RuntimeStore(Singleton):
     home_data_dir = ""
     storage = None
     conf = None
+    external = None
+    external_need_update = False
 
 
     def __init__(self):
@@ -68,8 +69,16 @@ class RuntimeStore(Singleton):
 
         self.storage = Storage()
 
-
         self.home_data_dir = os.path.realpath(os.path.join(xdg_data_home, "hamster-time-tracker"))
+        
+    def get_external(self):
+        if self.external_need_update:
+            self.refresh_external(conf)
+        return self.external
+    
+    def refresh_external(self, conf):
+        self.external = ActivitiesSource(conf)
+        self.external_need_update = False
 
     @property
     def art_dir(self):
@@ -210,6 +219,7 @@ class GConfStore(gobject.GObject, Singleton):
         self._client = gconf.client_get_default()
         self._client.add_dir(self.GCONF_DIR[:-1], gconf.CLIENT_PRELOAD_RECURSIVE)
         self._notifications = []
+        runtime.refresh_external(self)
 
     def _fix_key(self, key):
         """
@@ -233,6 +243,7 @@ class GConfStore(gobject.GObject, Singleton):
         value = self._get_value(entry.value, self.DEFAULTS[key])
 
         self.emit('conf-changed', key, value)
+        runtime.external_need_update = True
 
 
     def _get_value(self, value, default):

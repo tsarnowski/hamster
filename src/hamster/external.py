@@ -20,7 +20,7 @@
 
 import gtk
 import logging
-from configuration import conf
+# from configuration import conf
 import gobject
 import re
 import dbus.mainloop.glib
@@ -61,10 +61,10 @@ JIRA_ISSUE_NAME_REGEX = "^(\w+-\d+): "
 ERROR_ADDITIONAL_MESSAGE = '\n\nCheck settings and reopen main window.'
 MIN_QUERY_LENGTH = 4
     
-class ActivitiesSource(gobject.GObject):
-    def __init__(self):
+class ActivitiesSource(object):
+    def __init__(self, conf):
         logging.debug('external init')
-        gobject.GObject.__init__(self)
+#         gobject.GObject.__init__(self)
         self.source = conf.get("activities_source")
         self.__gtg_connection = None
         self.rt = None
@@ -72,68 +72,72 @@ class ActivitiesSource(gobject.GObject):
         self.jira = None
         self.jira_projects = None
         self.jira_query = None
-
+        
+        try:
+            self.__connect(conf)
+        except Exception as e:
+            error_msg = self.source + ' connection failed: ' + str(e)
+            self.on_error(error_msg + ERROR_ADDITIONAL_MESSAGE)
+            logging.warn(error_msg)
+            self.source = SOURCE_NONE
+        
+    def __connect(self, conf):
         if self.source == SOURCE_EVOLUTION and not evolution:
             self.source = SOURCE_NONE # on failure pretend that there is no evolution
         elif self.source == SOURCE_GTG:
-            gobject.GObject.__init__(self)
+#             gobject.GObject.__init__(self)
             dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         elif self.source == SOURCE_RT:
-            self.rt_url = conf.get("rt_url")
-            self.rt_user = conf.get("rt_user")
-            self.rt_pass = conf.get("rt_pass")
-            self.rt_query = conf.get("rt_query")
-            self.rt_category = conf.get("rt_category_field")
-            if self.rt_url and self.rt_user and self.rt_pass:
-                try:
-                    self.rt = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
-                    if not self.rt.login():
-                        self.source = SOURCE_NONE
-                except Exception as e:
-                    error_msg = 'rt login failed: ' + str(e)
-                    self.on_error(error_msg + ERROR_ADDITIONAL_MESSAGE)
-                    logging.warn(error_msg)
-                    self.source = SOURCE_NONE
-            else:
-                self.source = SOURCE_NONE
+            self.__connect_to_rt(conf)
         elif self.source == SOURCE_REDMINE:
-            self.rt_url = conf.get("rt_url")
-            self.rt_user = conf.get("rt_user")
-            self.rt_pass = conf.get("rt_pass")
-            self.rt_category = conf.get("rt_category_field")
-            try:
-                self.rt_query = json.loads(conf.get("rt_query"))
-            except:
-                self.rt_query = ({})
-            if self.rt_url and self.rt_user and self.rt_pass:
-                try:
-                    self.redmine = redmine.Redmine(self.rt_url, auth=(self.rt_user,self.rt_pass))
-                    if not self.redmine:
-                        self.source = SOURCE_NONE
-                except:
-                    self.source = SOURCE_NONE
-            else:
-                self.source = SOURCE_NONE
+            self.__connect_to_redmine(conf)
         elif jira_active and self.source == SOURCE_JIRA:
-            self.jira_url = conf.get("jira_url")
-            self.jira_user = conf.get("jira_user")
-            self.jira_pass = conf.get("jira_pass")
-            self.jira_query = conf.get("jira_query")
-            self.jira_category = conf.get("jira_category_field")
-            self.jira_fields=','.join(['summary', self.jira_category])
-            if self.jira_url and self.jira_user and self.jira_pass:
-                try:
-                    options = {'server': self.jira_url}
-                    self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = False)
-                    self.jira_projects = self.__get_jira_projects()
-                except Exception as e:
-                    error_msg = 'jira connection failed: ' + str(e)
-                    self.on_error(error_msg + ERROR_ADDITIONAL_MESSAGE)
-                    logging.warn(error_msg)
-                    self.source = SOURCE_NONE
-            else:
-                self.source = SOURCE_NONE
+            self.__connect_to_jira(conf)
         
+    def __connect_to_redmine(self, conf):
+        self.rt_url = conf.get("rt_url")
+        self.rt_user = conf.get("rt_user")
+        self.rt_pass = conf.get("rt_pass")
+        self.rt_category = conf.get("rt_category_field")
+        try:
+            self.rt_query = json.loads(conf.get("rt_query"))
+        except:
+            self.rt_query = ({})
+        if self.rt_url and self.rt_user and self.rt_pass:
+            self.redmine = redmine.Redmine(self.rt_url, auth=(self.rt_user,self.rt_pass))
+            if not self.redmine:
+                self.source = SOURCE_NONE
+        else:
+            self.source = SOURCE_NONE
+            
+        
+    def __connect_to_jira(self, conf):
+        self.jira_url = conf.get("jira_url")
+        self.jira_user = conf.get("jira_user")
+        self.jira_pass = conf.get("jira_pass")
+        self.jira_query = conf.get("jira_query")
+        self.jira_category = conf.get("jira_category_field")
+        self.jira_fields=','.join(['summary', self.jira_category])
+        if self.jira_url and self.jira_user and self.jira_pass:
+            options = {'server': self.jira_url}
+            self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)
+            self.jira_projects = self.__get_jira_projects()
+        else:
+            self.source = SOURCE_NONE
+        
+    def __connect_to_rt(self, conf):
+        self.rt_url = conf.get("rt_url")
+        self.rt_user = conf.get("rt_user")
+        self.rt_pass = conf.get("rt_pass")
+        self.rt_query = conf.get("rt_query")
+        self.rt_category = conf.get("rt_category_field")
+        if self.rt_url and self.rt_user and self.rt_pass:
+            self.rt = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
+            if not self.rt.login():
+                self.source = SOURCE_NONE
+        else:
+            self.source = SOURCE_NONE
+    
     def get_activities(self, query = None):
         if not self.source or not query:
             return []
