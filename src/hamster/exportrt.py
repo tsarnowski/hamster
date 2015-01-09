@@ -292,7 +292,7 @@ class ExportRtController(gtk.Object):
         self.window.show()
         
     def on_start_activate(self, button):
-        if self.rt or self.redmine or self.jira:
+        if runtime.get_external().rt or runtime.get_external().redmine or runtime.get_external().jira:
             group_comments = self.aggregate_comments_checkbox.get_active()
             it = self.tree_store.get_iter_first()
             to_report_list = []
@@ -357,7 +357,7 @@ class ExportRtController(gtk.Object):
         else:
             time = 0
 
-        if self.rt.comment(ticket_id, text, time) and not test:
+        if runtime.get_external().rt.comment(ticket_id, text, time) and not test:
             for fact in facts:
                 runtime.storage.update_fact(fact.id, fact, False,True)
 #                fact_row.selected = False
@@ -370,7 +370,7 @@ class ExportRtController(gtk.Object):
         else:
             time = 0
 
-        if self.jira.add_worklog(issue = issue_id, comment = text, timeSpent = time) and not test:
+        if runtime.get_external().jira.add_worklog(issue = issue_id, comment = text, timeSpent = time) and not test:
             for fact in facts:
                 runtime.storage.update_fact(fact.id, fact, False,True)
             
@@ -384,7 +384,7 @@ class ExportRtController(gtk.Object):
         time_entry_data['time_entry']['comments'] = comments
         time_entry_data['time_entry']['activity_id'] = 9
         
-        r = self.redmine.createTimeEntry(time_entry_data)
+        r = runtime.get_external().redmine.createTimeEntry(time_entry_data)
         logging.warn(r.status_code)
         logging.warn(r.content)
         if r.status_code == 201 and not test:
@@ -423,8 +423,8 @@ class ExportRtController(gtk.Object):
         self.on_close(button, None)
 
     def on_close(self, widget, event):
-        if self.source == SOURCE_RT:
-            self.rt.logout();
+#         if self.source == SOURCE_RT:
+#             self.rt.logout();
         self.close_window()
 
     def close_window(self):
