@@ -120,7 +120,8 @@ class PreferencesEditor(gtk.Object):
                                    ("evo", "Evolution"),
                                    ("gtg", "Getting Things Gnome"),
                                    ("rt", "Request Tracker"),
-                                   ("redmine", "Redmine")]
+                                   ("redmine", "Redmine"),
+                                   ("jira", "JIRA")]
         self.todo_combo = gtk.combo_box_new_text()
         for code, label in self.activities_sources:
             self.todo_combo.append_text(label)
@@ -144,6 +145,32 @@ class PreferencesEditor(gtk.Object):
         self.rt_query = gtk.Entry()
         self.rt_query.connect("changed", self.on_rt_query_changed)
         self.get_widget('rt_query').add(self.rt_query)
+        
+        self.rt_category_field = gtk.Entry()
+        self.rt_category_field.connect("changed", self.on_rt_category_field_changed)
+        self.get_widget('rt_category_field').add(self.rt_category_field)
+        
+        # JIRA prefs
+        self.jira_url = gtk.Entry()
+        self.jira_url.connect("changed", self.on_jira_url_changed)
+        self.get_widget('jira_url').add(self.jira_url)
+        
+        self.jira_user = gtk.Entry()
+        self.jira_user.connect("changed", self.on_jira_user_changed)
+        self.get_widget('jira_user').add(self.jira_user)
+        
+        self.jira_pass = gtk.Entry()
+        self.jira_pass.set_visibility(False)
+        self.jira_pass.connect("changed", self.on_jira_pass_changed)
+        self.get_widget('jira_pass').add(self.jira_pass)
+        
+        self.jira_query = gtk.Entry()
+        self.jira_query.connect("changed", self.on_jira_query_changed)
+        self.get_widget('jira_query').add(self.jira_query)
+        
+        self.jira_category_field = gtk.Entry()
+        self.jira_category_field.connect("changed", self.on_jira_category_field_changed)
+        self.get_widget('jira_category_field').add(self.jira_category_field)
 
         # create and fill activity tree
         self.activity_tree = self.get_widget('activity_list')
@@ -301,6 +328,26 @@ class PreferencesEditor(gtk.Object):
 
     def on_rt_query_changed(self, entry):
         conf.set('rt_query', self.rt_query.get_text())
+        
+    def on_rt_category_field_changed(self, entry):
+        conf.set('rt_category_field', self.rt_category_field.get_text())
+        
+        
+
+    def on_jira_url_changed(self, entry):
+        conf.set('jira_url', self.jira_url.get_text())
+
+    def on_jira_user_changed(self, entry):
+        conf.set('jira_user', self.jira_user.get_text())
+
+    def on_jira_pass_changed(self, entry):
+        conf.set('jira_pass', self.jira_pass.get_text())
+
+    def on_jira_query_changed(self, entry):
+        conf.set('jira_query', self.jira_query.get_text())
+        
+    def on_jira_category_field_changed(self, entry):
+        conf.set('jira_category_field', self.jira_category_field.get_text())
 
     def on_todo_combo_changed(self, combo):
         conf.set("activities_source", self.activities_sources[combo.get_active()][0])
@@ -368,13 +415,20 @@ class PreferencesEditor(gtk.Object):
         self.rt_user.set_text(conf.get('rt_user'))
         self.rt_pass.set_text(conf.get('rt_pass'))
         self.rt_query.set_text(conf.get('rt_query'))
+        self.rt_category_field.set_text(conf.get('rt_category_field'))
+        
+        self.jira_url.set_text(conf.get('jira_url'))
+        self.jira_user.set_text(conf.get('jira_user'))
+        self.jira_pass.set_text(conf.get('jira_pass'))
+        self.jira_query.set_text(conf.get('jira_query'))
+        self.jira_category_field.set_text(conf.get('jira_category_field'))
         
         self.get_widget("icon_glow").set_active(conf.get("icon_glow"))
         self.get_widget("show_label").set_active(conf.get("show_label"))
         self.get_widget("label_length").set_sensitive(conf.get("show_label"))
         self.get_widget("label_length").set_value(conf.get("label_length"))
         self.get_widget("last_activities_days").set_value(conf.get("last_activities_days"))
-        self.get_widget("rt_activities_only").set_active(conf.get("rt_activities_only"))
+        self.get_widget("remote_activities_only").set_active(conf.get("remote_activities_only"))
 
 
     def on_autocomplete_tags_view_focus_out_event(self, view, event):
@@ -508,7 +562,7 @@ class PreferencesEditor(gtk.Object):
             new = new_text.decode("utf-8")
             runtime.storage.update_activity(id, new, category_id)
             # size matters - when editing activity name just changed the case (bar -> Bar)
-            if prev != new and prev.lower() == new.lower():
+            if prev != new and None != prev and prev.lower() == new.lower():
                 trophies.unlock("size_matters")
 
         model[path][1] = new_text
@@ -782,8 +836,8 @@ class PreferencesEditor(gtk.Object):
     def on_notify_on_idle_toggled(self, checkbox):
         conf.set("notify_on_idle", checkbox.get_active())
 
-    def on_rt_activities_only_toggled(self, checkbox):
-        conf.set('rt_activities_only', checkbox.get_active())
+    def on_remote_activities_only_toggled(self, checkbox):
+        conf.set('remote_activities_only', checkbox.get_active())
 
     def on_notify_interval_format_value(self, slider, value):
         if value <=120:

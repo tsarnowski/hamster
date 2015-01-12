@@ -3,10 +3,16 @@ Details here: http://projecthamster.wordpress.com/2013/05/13/hamster-is-looking-
 
 h1. Dependencies
 
-Debian-based: @apt-get install git-core gettext intltool python-gconf python-requests python-beaker python-wnck@
-RPM-based: @yum install git-core gettext intltool gnome-python2-gconf python-requests python-beaker python-wnck@
+Debian-based: @apt-get install git-core gettext intltool python-gconf python-requests python-beaker python-wnck gir1.2-gconf-2.0@
+RPM-based: @yum install git-core gettext intltool gnome-python2-gconf python-requests python-beaker python-wnck gir1.2-gconf-2.0@
+Other: 
+* @apt-get install python-appindicator@ (for xfce)
+* @apt-get install python-pip@
+* @pip install jira@
 
 h1. Installing
+
+*WARNING* It's preffered to uninstall other hamsters from system
 
 pre. ./waf configure build --prefix=/usr
 sudo ./waf install

@@ -23,8 +23,9 @@ import re
 
 from ..configuration import runtime, conf
 from ..lib import Fact, stuff, graphics
-from .. import external
+# from .. import external
 from ..lib.rt import TICKET_NAME_REGEX
+from ..lib.rt import DEFAULT_RT_CATEGORY
 
 class ActivityEntry(gtk.Entry):
     __gsignals__ = {
@@ -40,7 +41,7 @@ class ActivityEntry(gtk.Entry):
         self.filter = None
         self.timeout_id = None
         self.max_results = 10 # limit popup size to 10 results
-        self.external = external.ActivitiesSource()
+#         self.external = external.ActivitiesSource()
 
         self.popup = gtk.Window(type = gtk.WINDOW_POPUP)
 
@@ -232,7 +233,7 @@ class ActivityEntry(gtk.Entry):
 
         # do not cache as ordering and available options change over time
         self.activities = runtime.storage.get_activities(fact.activity)
-        self.external_activities = self.external.get_activities(fact.activity)
+        self.external_activities = runtime.get_external().get_activities(fact.activity)
         new_activities = []
         for activity in self.activities:
             match = re.match("^(#\d+: )", activity['name'])
@@ -272,11 +273,11 @@ class ActivityEntry(gtk.Entry):
             for category in self.categories:
                 if key in category['name'].decode('utf8', 'replace').lower():
                     fillable = (self.filter[:self.filter.find("@") + 1] + category['name'])
-                    store.append([fillable, self.filter[:self.filter.find("@")], category['name'], time, category.get('rt_id')])
+                    store.append([fillable, self.filter[:self.filter.find("@")], category['name'], time, category.get('rt_id'), None])
         else:
             key = fact.activity.decode('utf8', 'replace').lower()
             activities_to_append = []
-            if conf.get("rt_activities_only"):
+            if conf.get("remote_activities_only"):
                 if not self.external_activities:
                     for a in self.activities:
                         activities_to_append.append(a)
@@ -354,6 +355,8 @@ class ActivityEntry(gtk.Entry):
                 return False
         elif event.keyval in (gtk.keysyms.Up, gtk.keysyms.Down):
             return False
+        elif event.keyval == gtk.keysyms.space and event.state & gtk.gdk.CONTROL_MASK == gtk.gdk.CONTROL_MASK:
+            self._populate_and_show()
         else:
             self._populate_and_show_delayed()
 
@@ -397,19 +400,23 @@ class ActivityEntry(gtk.Entry):
         model, iter = tree.get_selection().get_selected()
         #TODO tutaj jest błąd!
         name = model.get_value(iter, 1)
+        ticket_name = name
         rt_id = model.get_value(iter, 4)
         delta_time = model.get_value(iter, 5)
         if delta_time:
             name = ' '.join([delta_time, name])
         
-        match = re.match(TICKET_NAME_REGEX, name)
+        match = re.match(TICKET_NAME_REGEX, ticket_name)
         category = ""
-        if not rt_id and match:
-            rt_id = match.group(1)
-        if rt_id:
-            category = self.external.get_ticket_category(rt_id)
         if not category:
             category = model.get_value(iter, 2)
+        if not category or category == DEFAULT_RT_CATEGORY:
+            if not rt_id and match:
+                rt_id = match.group(1)
+            if rt_id and match:
+                category = runtime.get_external().get_ticket_category(rt_id)
+        if not category:
+            category = ''
         return '@'.join([name, category])
 
     def _on_selected(self):

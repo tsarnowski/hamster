@@ -25,14 +25,29 @@ import math
 
 from lib import rt, stuff, redmine
 from lib.rt import TICKET_NAME_REGEX
+from external import SOURCE_NONE
+from external import SOURCE_RT
+from external import SOURCE_REDMINE
+from external import SOURCE_JIRA
+from external import JIRA_ISSUE_NAME_REGEX
 from configuration import conf, runtime, load_ui_file
+
+jira_active = True
+try:
+    from jira.client import JIRA
+except:
+    jira_active = False
 
 
 class ExportRow(object):
     def __init__(self, fact):
         self.fact = fact
-        match = re.match(TICKET_NAME_REGEX, fact.activity)
-        self.id = match.group(1)
+        rt_match = re.match(TICKET_NAME_REGEX, fact.activity)
+        if rt_match:
+            self.id = rt_match.group(1)
+        jira_match = re.match(JIRA_ISSUE_NAME_REGEX, fact.activity)
+        if jira_match:
+            self.id = jira_match.group(1)
         self.comment = self.get_text(fact)
         self.date = self.get_date(fact)
         self.time_worked = stuff.duration_minutes(fact.delta)
@@ -137,30 +152,50 @@ class ExportRtController(gtk.Object):
         gtk.Object.__init__(self)
         
         self.source = conf.get("activities_source")
-
-        if self.source == "rt":
-#            Init RT
-            self.rt_url = conf.get("rt_url")
-            self.rt_user = conf.get("rt_user")
-            self.rt_pass = conf.get("rt_pass")
-
-            self.tracker = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
-            if not self.tracker.login():
-                self.tracker = None
-        elif self.source == "redmine":
-            self.rt_url = conf.get("rt_url")
-            self.rt_user = conf.get("rt_user")
-            self.rt_pass = conf.get("rt_pass")
-
-            if self.rt_url and self.rt_user and self.rt_pass:
-                try:
-                    self.tracker = redmine.Redmine(self.rt_url, auth=(self.rt_user,self.rt_pass))
-                    if not self.tracker:
-                        self.source = ""
-                except:
-                    self.source = ""
-            else:
-                self.source = ""
+#         self.rt = None
+#         self.redmine = None
+#         self.jira = None
+#
+#         if self.source == SOURCE_RT:
+# #            Init RT
+#             self.rt_url = conf.get("rt_url")
+#             self.rt_user = conf.get("rt_user")
+#             self.rt_pass = conf.get("rt_pass")
+# 
+#             self.rt = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
+#             if not self.rt.login():
+#                 self.rt = None
+#         elif self.source == SOURCE_REDMINE:
+#             self.rt_url = conf.get("rt_url")
+#             self.rt_user = conf.get("rt_user")
+#             self.rt_pass = conf.get("rt_pass")
+# 
+#             if self.rt_url and self.rt_user and self.rt_pass:
+#                 try:
+#                     self.redmine = redmine.Redmine(self.rt_url, auth=(self.rt_user,self.rt_pass))
+#                     if not self.redmine:
+#                         self.source = SOURCE_NONE
+#                 except:
+#                     self.source = SOURCE_NONE
+#             else:
+#                 self.source = SOURCE_NONE
+# 
+#         elif jira_active and self.source == SOURCE_JIRA:
+#             self.jira_url = conf.get("jira_url")
+#             self.jira_user = conf.get("jira_user")
+#             self.jira_pass = conf.get("jira_pass")
+#             self.jira_query = conf.get("jira_query")
+#             self.jira_category = conf.get("jira_category_field")
+#             self.jira_fields=','.join(['summary', self.jira_category])
+#             if self.jira_url and self.jira_user and self.jira_pass:
+#                 try:
+#                     options = {'server': self.jira_url}
+#                     self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)
+#                 except Exception as e:
+#                     logging.warn('jira connection failed: '+str(e))
+#                     self.source = SOURCE_NONE
+#             else:
+#                 self.source = SOURCE_NONE
                 
         self._gui = load_ui_file("export_rt.ui")
         self.window = self.get_widget('report_rt_window')
@@ -174,22 +209,30 @@ class ExportRtController(gtk.Object):
         self.tree_store = gtk.TreeStore(gobject.TYPE_PYOBJECT)
         self.rows = list([ExportRow(fact) for fact in facts])
         self.rows.sort(key = lambda row: row.id)
-        tickets = {}
-        for ticket, rows in groupby(self.rows, lambda export_row: export_row.id):
-            tickets[ticket] = list(rows)
-        for item in tickets.keys():
+        grouped_rows = {}
+        for issue_id, rows in groupby(self.rows, lambda export_row: export_row.id):
+            grouped_rows[issue_id] = list(rows)
+        for issue_id in grouped_rows.keys():
             #ściągnąć nazwę ticketa
-            if self.source == "rt":
-                ticket = self.tracker.get_ticket(item);
-            elif self.source == "redmine":
-                issue = self.tracker.getIssue(item);
-                ticket = {};
-                ticket['id'] = issue.id
-                ticket['Subject'] = issue.subject
+            if self.source == SOURCE_RT:
+                row_data = runtime.get_external().rt.get_ticket(issue_id)
+#                 row_data['source'] = SOURCE_RT
+            elif self.source == SOURCE_REDMINE:
+                issue = runtime.get_external().redmine.getIssue(issue_id)
+                row_data = {}
+                row_data['id'] = issue.id
+                row_data['Subject'] = str(issue_id)+': '+issue.fields.summary
+#                 row_data['source'] = SOURCE_REDMINE
+            elif self.source == SOURCE_JIRA:
+                issue = runtime.get_external().jira.issue(issue_id)
+                row_data = {}
+                row_data['id'] = issue.id
+                row_data['Subject'] = issue.fields.summary
+#                 row_data['source'] = SOURCE_JIRA
 
-            if ticket:
-                parent = self.tree_store.append( None, (TicketRow(ticket), ) )
-                for row in tickets[item]:
+            if row_data:
+                parent = self.tree_store.append( None, (TicketRow(row_data), ) )
+                for row in grouped_rows[issue_id]:
                     self.tree_store.append(parent, (row, ))
             
 #        self.tree_store.append(parent, (row.comment))
@@ -249,7 +292,7 @@ class ExportRtController(gtk.Object):
         self.window.show()
         
     def on_start_activate(self, button):
-        if self.tracker:
+        if runtime.get_external().rt or runtime.get_external().redmine or runtime.get_external().jira:
             group_comments = self.aggregate_comments_checkbox.get_active()
             it = self.tree_store.get_iter_first()
             to_report_list = []
@@ -270,7 +313,7 @@ class ExportRtController(gtk.Object):
                 else:
                     for row in export_rows:
                         to_report_list.append({'id':ticket_row.id, 'name':ticket_row.name, 'comment':"%s - %s min"% (row.comment, row.time_worked), 'time':row.time_worked, 'facts':[row.fact], 'date': row.date})
-#                        self.__comment_ticket(ticket_row.id, "%s - %s min"% (row.comment, row.time_worked), row.time_worked, [row.fact])
+#                        self.__add_rt_worklog(ticket_row.id, "%s - %s min"% (row.comment, row.time_worked), row.time_worked, [row.fact])
                 it = self.tree_store.iter_next(it)
             to_report_len = len(to_report_list)
             self.progressbar.set_fraction(0.0)
@@ -280,10 +323,12 @@ class ExportRtController(gtk.Object):
                 self.progressbar.set_fraction(float(i)/to_report_len)
                 while gtk.events_pending(): 
                     gtk.main_iteration()
-                if self.source == "rt":
-                    self.__comment_ticket(to_report['id'], to_report['comment'], to_report['time'], to_report['facts'])
-                elif self.source == "redmine":
-                    self.__add_time_entry(to_report['id'], to_report['date'], math.ceil(to_report['time']*100/60)/100, to_report['comment'], to_report['facts'])
+                if self.source == SOURCE_RT:
+                    self.__add_rt_worklog(to_report['id'], to_report['comment'], to_report['time'], to_report['facts'])
+                elif self.source == SOURCE_REDMINE:
+                    self.__add_redmine_worklog(to_report['id'], to_report['date'], math.ceil(to_report['time']*100/60)/100, to_report['comment'], to_report['facts'])
+                elif self.source == SOURCE_JIRA:
+                    self.__add_jira_worklog(to_report['id'], to_report['comment'], to_report['time'], to_report['facts'])
             self.progressbar.set_text("Done")
             self.progressbar.set_fraction(1.0)
 #            for fact in self.facts:
@@ -295,7 +340,7 @@ class ExportRtController(gtk.Object):
 #                    logging.warn(ticket_id)
 #                    logging.warn(text)
 #                    logging.warn("minutes: %s" % time_worked)
-##                    external.tracker.comment(ticket_id, text, time_worked)
+##                    external.rt.comment(ticket_id, text, time_worked)
 #                else:
 #                    logging.warn("Not a RT ticket or in progress: %s" % fact.activity)
         else:
@@ -304,7 +349,7 @@ class ExportRtController(gtk.Object):
         #TODO only if parent is overview
         self.parent.search()
             
-    def __comment_ticket(self, ticket_id, text, time_worked, facts):
+    def __add_rt_worklog(self, ticket_id, text, time_worked, facts):
         test = self.test_checkox.get_active()
 #        logging.warn(_("updating ticket #%s: %s min, comment: \n%s") % (ticket_id, time_worked, text))
         if not test:
@@ -312,12 +357,24 @@ class ExportRtController(gtk.Object):
         else:
             time = 0
 
-        if self.tracker.comment(ticket_id, text, time) and not test:
+        if runtime.get_external().rt.comment(ticket_id, text, time) and not test:
             for fact in facts:
                 runtime.storage.update_fact(fact.id, fact, False,True)
 #                fact_row.selected = False
             
-    def __add_time_entry(self, issue_id, spent_on, hours, comments, facts):
+    def __add_jira_worklog(self, issue_id, text, time_worked, facts):
+        test = self.test_checkox.get_active()
+#        logging.warn(_("updating ticket #%s: %s min, comment: \n%s") % (ticket_id, time_worked, text))
+        if not test:
+            time = time_worked
+        else:
+            time = 0
+
+        if runtime.get_external().jira.add_worklog(issue = issue_id, comment = text, timeSpent = time) and not test:
+            for fact in facts:
+                runtime.storage.update_fact(fact.id, fact, False,True)
+            
+    def __add_redmine_worklog(self, issue_id, spent_on, hours, comments, facts):
         test = self.test_checkox.get_active()
         logging.warn(_("updating issue #%s: %s hrs, comment: \n%s") % (issue_id, hours, comments))
         time_entry_data = {'time_entry': {}}
@@ -327,7 +384,7 @@ class ExportRtController(gtk.Object):
         time_entry_data['time_entry']['comments'] = comments
         time_entry_data['time_entry']['activity_id'] = 9
         
-        r = self.tracker.createTimeEntry(time_entry_data)
+        r = runtime.get_external().redmine.createTimeEntry(time_entry_data)
         logging.warn(r.status_code)
         logging.warn(r.content)
         if r.status_code == 201 and not test:
@@ -366,8 +423,8 @@ class ExportRtController(gtk.Object):
         self.on_close(button, None)
 
     def on_close(self, widget, event):
-        if self.source == "rt":
-            self.tracker.logout();
+#         if self.source == SOURCE_RT:
+#             self.rt.logout();
         self.close_window()
 
     def close_window(self):

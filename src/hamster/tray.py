@@ -272,14 +272,23 @@ class ProjectHamsterStatusIconUnity():
                     groups[cat] = []
                 groups[cat].append(fact)
             
+            first = True
             for category in groups.keys():
+                if first:
+                    first = False;
+                else:
+                    separator = gtk.SeparatorMenuItem()
+                    separator.show()
+                    self.last_activities_menu.append(separator)
                 menu_item = gtk.MenuItem(_(category))
                 menu_item.set_sensitive(False)
                 self.last_activities_menu.append(menu_item)
                 menu_item.show()
                 for fact in groups[category]:
-                    menu_item = gtk.MenuItem(fact.serialized_name_for_menu())
+                    menu_item = gtk.MenuItem("   " + fact.serialized_name_for_menu())
                     menu_item.connect("activate", self.on_last_activity_activated, fact.serialized_name())
+#                    it doesn't work because ubuntu doesn't support it 
+#                    menu_item.connect("scroll-event", self.on_last_activity_scroll_event, fact)
                     self.last_activities_menu.append(menu_item)
                     menu_item.show()
                     
@@ -291,6 +300,12 @@ class ProjectHamsterStatusIconUnity():
         if not fact.activity:
             return
         runtime.storage.add_fact(fact)
+
+#    def on_last_activity_scroll_event(self, widget, event, fact):
+#        if event.direction == gtk.gdk.SCROLL_UP:
+#            widget.get_child().set_text(fact.serialized_name_for_menu()+" UP")
+#        if event.direction == gtk.gdk.SCROLL_DOWN:
+#            widget.get_child().set_text(fact.serialized_name_for_menu()+" DOWN")
         
     def update_label(self):
         '''Override for menu items sensitivity and to update the menu'''

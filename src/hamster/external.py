@@ -18,85 +18,143 @@
 # You should have received a copy of the GNU General Public License
 # along with Project Hamster.  If not, see <http://www.gnu.org/licenses/>.
 
+import gtk
 import logging
-from configuration import conf
+# from configuration import conf
 import gobject
 import re
-import dbus, dbus.mainloop.glib
+import dbus.mainloop.glib
 import json
 from lib import rt
 from lib import redmine
+from lib.rt import DEFAULT_RT_CATEGORY
+from beaker.cache import cache_regions, cache_region
+
+jira_active = True
+try:
+    from jira.client import JIRA
+except:
+    jira_active = False
 
 try:
     import evolution
     from evolution import ecal
 except:
     evolution = None
+
+# configure regions
+cache_regions.update({
+    'short_term':{
+        'expire': 60*1000,
+        'type': 'memory',
+        'key_length': 250
+    }
+})
+
+SOURCE_NONE = ""
+SOURCE_GTG = 'gtg'
+SOURCE_EVOLUTION = 'evo'
+SOURCE_RT = 'rt'
+SOURCE_REDMINE = 'redmine'
+SOURCE_JIRA = 'jira'
+JIRA_ISSUE_NAME_REGEX = "^(\w+-\d+): "
+ERROR_ADDITIONAL_MESSAGE = '\n\nCheck settings and reopen main window.'
+MIN_QUERY_LENGTH = 4
     
-class ActivitiesSource(gobject.GObject):
-    def __init__(self):
+class ActivitiesSource(object):
+    def __init__(self, conf):
         logging.debug('external init')
-        gobject.GObject.__init__(self)
+#         gobject.GObject.__init__(self)
         self.source = conf.get("activities_source")
         self.__gtg_connection = None
-
-        if self.source == "evo" and not evolution:
-            self.source == "" # on failure pretend that there is no evolution
-        elif self.source == "gtg":
-            gobject.GObject.__init__(self)
-            dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-        elif self.source == "rt":
-            self.rt_url = conf.get("rt_url")
-            self.rt_user = conf.get("rt_user")
-            self.rt_pass = conf.get("rt_pass")
-            self.rt_query = conf.get("rt_query")
-            self.rt_category = conf.get("rt_category_field")
-            if self.rt_url and self.rt_user and self.rt_pass:
-                try:
-                    self.tracker = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
-                    if not self.tracker.login():
-                        self.source = ""
-                except Exception as e:
-                    logging.warn('rt login failed: '+str(e))
-                    self.source = ""
-            else:
-                self.source = ""
-        elif self.source == "redmine":
-            self.rt_url = conf.get("rt_url")
-            self.rt_user = conf.get("rt_user")
-            self.rt_pass = conf.get("rt_pass")
-            self.rt_category = conf.get("rt_category_field")
-            try:
-                self.rt_query = json.loads(conf.get("rt_query"))
-            except:
-                self.rt_query = ({})
-            if self.rt_url and self.rt_user and self.rt_pass:
-                try:
-                    self.tracker = redmine.Redmine(self.rt_url, auth=(self.rt_user,self.rt_pass))
-                    if not self.tracker:
-                        self.source = ""
-                except:
-                    self.source = ""
-            else:
-                self.source = ""
+        self.rt = None
+        self.redmine = None
+        self.jira = None
+        self.jira_projects = None
+        self.jira_query = None
         
+        try:
+            self.__connect(conf)
+        except Exception as e:
+            error_msg = self.source + ' connection failed: ' + str(e)
+            self.on_error(error_msg + ERROR_ADDITIONAL_MESSAGE)
+            logging.warn(error_msg)
+            self.source = SOURCE_NONE
+        
+    def __connect(self, conf):
+        if self.source == SOURCE_EVOLUTION and not evolution:
+            self.source = SOURCE_NONE # on failure pretend that there is no evolution
+        elif self.source == SOURCE_GTG:
+#             gobject.GObject.__init__(self)
+            dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+        elif self.source == SOURCE_RT:
+            self.__connect_to_rt(conf)
+        elif self.source == SOURCE_REDMINE:
+            self.__connect_to_redmine(conf)
+        elif jira_active and self.source == SOURCE_JIRA:
+            self.__connect_to_jira(conf)
+        
+    def __connect_to_redmine(self, conf):
+        self.rt_url = conf.get("rt_url")
+        self.rt_user = conf.get("rt_user")
+        self.rt_pass = conf.get("rt_pass")
+        self.rt_category = conf.get("rt_category_field")
+        try:
+            self.rt_query = json.loads(conf.get("rt_query"))
+        except:
+            self.rt_query = ({})
+        if self.rt_url and self.rt_user and self.rt_pass:
+            self.redmine = redmine.Redmine(self.rt_url, auth=(self.rt_user,self.rt_pass))
+            if not self.redmine:
+                self.source = SOURCE_NONE
+        else:
+            self.source = SOURCE_NONE
+            
+        
+    def __connect_to_jira(self, conf):
+        self.jira_url = conf.get("jira_url")
+        self.jira_user = conf.get("jira_user")
+        self.jira_pass = conf.get("jira_pass")
+        self.jira_query = conf.get("jira_query")
+        self.jira_category = conf.get("jira_category_field")
+        self.jira_fields=','.join(['summary', self.jira_category])
+        if self.jira_url and self.jira_user and self.jira_pass:
+            options = {'server': self.jira_url}
+            self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)
+            self.jira_projects = self.__get_jira_projects()
+        else:
+            self.source = SOURCE_NONE
+        
+    def __connect_to_rt(self, conf):
+        self.rt_url = conf.get("rt_url")
+        self.rt_user = conf.get("rt_user")
+        self.rt_pass = conf.get("rt_pass")
+        self.rt_query = conf.get("rt_query")
+        self.rt_category = conf.get("rt_category_field")
+        if self.rt_url and self.rt_user and self.rt_pass:
+            self.rt = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
+            if not self.rt.login():
+                self.source = SOURCE_NONE
+        else:
+            self.source = SOURCE_NONE
+    
     def get_activities(self, query = None):
-        if not self.source:
+        if not self.source or not query:
             return []
 
-        if self.source == "evo":
+        if self.source == SOURCE_EVOLUTION:
             return [activity for activity in get_eds_tasks()
                          if query is None or activity['name'].startswith(query)]
-        elif self.source == "rt":
+        elif self.source == SOURCE_RT:
             activities = self.__extract_from_rt(query, self.rt_query)
             direct_ticket = None
             if query and re.match("^[0-9]+$", query):
-                ticket = self.tracker.get_ticket(query)
+                ticket = self.rt.get_ticket(query)
                 if ticket:
-                    direct_ticket = self.__extract_activity_from_ticket(ticket)
+                    direct_ticket = self.__extract_activity_from_rt_ticket(ticket)
             if direct_ticket:
                 activities.append(direct_ticket)
-            if len(activities) <= 2 and not direct_ticket and len(query) > 4:
+            if len(activities) <= 2 and not direct_ticket and len(query) >= MIN_QUERY_LENGTH:
                 li = query.split(' ')
                 rt_query = " AND ".join(["(Subject LIKE '%s' OR Owner='%s')" % (q, q) for q in li]) + " AND (Status='new' OR Status='open')"
                 #logging.warn(rt_query)
@@ -105,16 +163,35 @@ class ActivitiesSource(gobject.GObject):
                     activities.append({"name": "---------------------", "category": "other open"})
                 activities.extend(third_activities)
             return activities
-        elif self.source == "redmine":
+        elif self.source == SOURCE_JIRA:
+            activities = self.__extract_from_jira(query, self.jira_query)
+            direct_issue = None
+            if query and re.match("^[a-zA-Z]+-[0-9]+$", query):
+                issue = self.jira.issue(query.upper())
+                if issue:
+                    direct_issue = self.__extract_activity_from_jira_issue(issue)
+            if direct_issue:
+                activities.append(direct_issue)
+            if len(activities) <= 2 and not direct_issue and len(query) >= MIN_QUERY_LENGTH:
+                li = query.split(' ')
+                fragments = [self.__generate_fragment_jira_query(word) for word in li]
+                jira_query = " AND ".join(fragments) + " AND resolution = Unresolved order by priority desc, updated desc"
+                #logging.warn(rt_query)
+                third_activities = self.__extract_from_jira('', jira_query)
+                if activities and third_activities:
+                    activities.append({"name": "---------------------", "category": "other open"})
+                activities.extend(third_activities)
+            return activities
+        elif self.source == SOURCE_REDMINE:
             activities = self.__extract_from_redmine(query, self.rt_query)
             direct_issue = None
             if query and re.match("^[0-9]+$", query):
-                issue = self.tracker.getIssue(query)
+                issue = self.redmine.getIssue(query)
                 if issue:
                     direct_issue = self.__extract_activity_from_issue(issue)
             if direct_issue:
                 activities.append(direct_issue)
-            if len(activities) <= 2 and not direct_issue and len(query) > 4:
+            if len(activities) <= 2 and not direct_issue and len(query) >= MIN_QUERY_LENGTH:
                 rt_query = ({'status_id': 'open', 'subject': query})
                 #logging.warn(rt_query)
                 third_activities = self.__extract_from_redmine(query, rt_query)
@@ -122,7 +199,7 @@ class ActivitiesSource(gobject.GObject):
                     activities.append({"name": "---------------------", "category": "other open"})
                 activities.extend(third_activities)
             return activities
-        elif self.source == "gtg":
+        elif self.source == SOURCE_GTG:
             conn = self.__get_gtg_connection()
             if not conn:
                 return []
@@ -147,17 +224,31 @@ class ActivitiesSource(gobject.GObject):
 
             return activities
         
-    def get_ticket_category(self, ticket_id):
+    def __generate_fragment_jira_query(self, word):
+        if word.upper() in self.jira_projects:
+            return "project = " + word.upper()
+        else:
+            return "(assignee = '%s' OR summary ~ '%s*')" % (word, word)
+        
+    def get_ticket_category(self, activity_id):
+        """get activity category depends on source"""
         if not self.source:
             return ""
 
-        if self.source == "rt":
-            ticket = self.tracker.get_ticket(ticket_id)
+        if self.source == SOURCE_RT:
+            ticket = self.rt.get_ticket(activity_id)
             return self.__extract_cat_from_ticket(ticket)
+        elif self.source == SOURCE_JIRA:
+#             try: 
+                issue = self.jira.issue(activity_id)
+                return self.__extract_activity_from_jira_issue(issue)
+#             except Exception as e:
+#                 logging.warn(e)
+#                 return ""
         else:
             return ""
     
-    def __extract_activity_from_ticket(self, ticket):
+    def __extract_activity_from_rt_ticket(self, ticket):
         #activity = {}
         ticket_id = ticket['id']
         #logging.warn(ticket)
@@ -177,30 +268,61 @@ class ActivitiesSource(gobject.GObject):
         activity['rt_id']=issue_id;
         activity['category']="";
         return activity
+    
+    def __extract_activity_from_jira_issue(self, issue):
+        activity = {}
+        issue_id = issue.key
+        activity['name'] = str(issue_id)+': '+issue.fields.summary.replace(",", " ")
+        activity['rt_id'] = issue_id
+        if hasattr(issue.fields, self.jira_category):
+            activity['category'] = getattr(issue.fields, self.jira_category)
+        else:
+            activity['category'] = ""
+        return activity
 
     def __extract_from_rt(self, query = None, rt_query = None, checkName = True):
         activities = []
-        results = self.tracker.search_simple(rt_query)
+#         results = self.rt.search_simple(rt_query)
+        results = self.rt.search_raw(rt_query, [self.rt_category])
         for ticket in results:
-            activity = self.__extract_activity_from_ticket(ticket)
+            activity = self.__extract_activity_from_rt_ticket(ticket)
             if query is None or not checkName or all(item in activity['name'].lower() for item in query.lower().split(' ')):
                 activities.append(activity)
         return activities
         
     def __extract_from_redmine(self, query = None, rt_query = None):
         activities = []
-        results = self.tracker.getIssues(rt_query)
+        results = self.redmine.getIssues(rt_query)
         for issue in results:
             activity = self.__extract_activity_from_issue(issue)
             if query is None or all(item in activity['name'].lower() for item in query.lower().split(' ')):
                 activities.append(activity)
         return activities
         
+    def __extract_from_jira(self, query = None, jira_query = None):
+        activities = []
+        try:
+            results = self.__search_jira_issues(jira_query)
+            for issue in results:
+                activity = self.__extract_activity_from_jira_issue(issue)
+                if query is None or all(item in activity['name'].lower() for item in query.lower().split(' ')):
+                    activities.append(activity)
+        except Exception as e:
+            logging.warn(e)
+        return activities
+    
+    def __get_jira_projects(self):
+        return [project.key for project in self.jira.projects()]
+    
+    @cache_region('short_term', '__extract_from_jira')
+    def __search_jira_issues(self, jira_query = None):
+        return self.jira.search_issues(jira_query, fields = self.jira_fields, maxResults = 100)
+        
     def __extract_cat_from_ticket(self, ticket):
-        category = "RT"
+        category = DEFAULT_RT_CATEGORY
         if 'Queue' in ticket:
             category = ticket['Queue']
-        if self.rt_category in ticket:
+        if self.rt_category in ticket and ticket[self.rt_category]:
             category = ticket[self.rt_category]
 #        owner = None
 #        if 'Owner' in ticket:
@@ -220,6 +342,13 @@ class ActivitiesSource(gobject.GObject):
             return self.__gtg_connection
         else:
             return None
+    
+    def on_error(self, msg):
+        md = gtk.MessageDialog(None, 
+            gtk.DIALOG_DESTROY_WITH_PARENT, gtk.MESSAGE_ERROR, 
+            gtk.BUTTONS_CLOSE, msg)
+        md.run()
+        md.destroy()
 
 
 

@@ -61,6 +61,7 @@ DEFAULT_QUEUE = 'General'
 """ Default queue used. """
 
 TICKET_NAME_REGEX = "^#(\d+): "
+DEFAULT_RT_CATEGORY = "RT"
 
 TIMEOUT = 5# seconds
 
