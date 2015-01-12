@@ -1,4 +1,4 @@
-Source: hamster-rt
+Source: hamster-intergraton
 Section: gnome
 Priority: optional
 Maintainer: Tomasz Sarnowski <sarnowskitomek@gmail.com>
@@ -13,7 +13,7 @@ Standards-Version: 3.9.2
 Homepage: http://live.gnome.org/ProjectHamster
 X-Python-Version: >= 2.5
 
-Package: hamster-rt
+Package: hamster-intergraton
 Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
@@ -32,9 +32,11 @@ Recommends: python-notify,
             gnome-icon-theme
 Suggests: python-evolution
 Replaces: hamster-applet,
-	hamster-time-tracker
+	hamster-time-tracker,
+	hamster-rt
 Conflicts: hamster-applet,
-	hamster-time-tracker
+	hamster-time-tracker,
+	hamster-rt
 Description: time tracking applet for GNOME
  Project Hamster helps you to keep track of how much time you spend on various
  activities during the day.  Whenever you move from one task to another, you

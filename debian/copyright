@@ -1,5 +1,5 @@
 Format-Specification: http://wiki.debian.org/Proposals/CopyrightFormat
-Upstream-Name: hamster-rt
+Upstream-Name: hamster-intergraton
 Upstream-Maintainer: Grzegorz Sobczyk <grzegorz.sobczyk@contium.pl>
 Upstream-Source: https://github.com/gsobczyk/hamster
 
