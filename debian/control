@@ -1,4 +1,4 @@
-Source: hamster-intergraton
+Source: hamster-integration
 Section: gnome
 Priority: optional
 Maintainer: Tomasz Sarnowski <sarnowskitomek@gmail.com>
@@ -13,7 +13,7 @@ Standards-Version: 3.9.2
 Homepage: https://github.com/gsobczyk/hamster
 X-Python-Version: >= 2.5
 
-Package: hamster-intergraton
+Package: hamster-integration
 Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
