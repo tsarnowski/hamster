@@ -1,3 +1,9 @@
+hamster-intergraton (2.0.0.1) precise; urgency=low
+
+  * Fix package dependencies
+
+ -- Tomasz Sarnowski <sarnowskitomek@gmail.com>  Wed, 04 Jan 2015 20:54:04 +0100
+
 hamster-intergraton (2.0.0.0) precise; urgency=low
 
   * Jira integration
