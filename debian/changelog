@@ -1,3 +1,9 @@
+hamster-integration (2.0.0.3) precise; urgency=low
+
+  * Fix jira dependency
+
+ -- Tomasz Sarnowski <sarnowskitomek@gmail.com>  Wed, 04 Jan 2015 22:05:04 +0100
+
 hamster-integration (2.0.0.2) precise; urgency=low
 
   * Fix package name
