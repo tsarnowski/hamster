@@ -28,7 +28,7 @@ Depends: ${misc:Depends},
          python-xdg,
 	python-requests,
 	python-beaker,
-	jira-python
+	python-jira
 Recommends: python-notify,
             gnome-icon-theme
 Suggests: python-evolution
