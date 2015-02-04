@@ -1,4 +1,10 @@
 ===============
+Version 2.0.0
+===============
+ * jira support
+ * bug fixes
+
+===============
 Version 1.03.3
 ===============
  * fix exporting entries to file
