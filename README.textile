@@ -8,7 +8,7 @@ RPM-based: @yum install git-core gettext intltool gnome-python2-gconf python-req
 Other: 
 * @apt-get install python-appindicator@ (for xfce)
 * @apt-get install python-pip@
-* @pip install jira==0.33 or use debian package@ 
+* @pip install jira==0.33@ or use debian package
 
 h1. Installing
 
