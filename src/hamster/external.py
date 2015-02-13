@@ -50,6 +50,7 @@ cache_regions.update({
         'key_length': 250
     }
 })
+logger = logging.getLogger("external")
 
 SOURCE_NONE = ""
 SOURCE_GTG = 'gtg'
@@ -63,7 +64,7 @@ MIN_QUERY_LENGTH = 4
     
 class ActivitiesSource(object):
     def __init__(self, conf):
-        logging.debug('external init')
+        logger.debug('external init')
 #         gobject.GObject.__init__(self)
         self.source = conf.get("activities_source")
         self.__gtg_connection = None
@@ -78,7 +79,7 @@ class ActivitiesSource(object):
         except Exception as e:
             error_msg = self.source + ' connection failed: ' + str(e)
             self.on_error(error_msg + ERROR_ADDITIONAL_MESSAGE)
-            logging.warn(error_msg)
+            logger.warn(error_msg)
             self.source = SOURCE_NONE
         
     def __connect(self, conf):
@@ -95,16 +96,16 @@ class ActivitiesSource(object):
             self.__connect_to_jira(conf)
         
     def __connect_to_redmine(self, conf):
-        self.rt_url = conf.get("rt_url")
-        self.rt_user = conf.get("rt_user")
-        self.rt_pass = conf.get("rt_pass")
-        self.rt_category = conf.get("rt_category_field")
+        self.redmine_url = conf.get("redmine_url")
+        self.redmine_user = conf.get("redmine_user")
+        self.redmine_pass = conf.get("redmine_pass")
         try:
-            self.rt_query = json.loads(conf.get("rt_query"))
+            self.redmine_query = json.loads(conf.get("redmine_query"))
         except:
-            self.rt_query = ({})
-        if self.rt_url and self.rt_user and self.rt_pass:
-            self.redmine = redmine.Redmine(self.rt_url, auth=(self.rt_user,self.rt_pass))
+            self.redmine_query = ({})
+        if self.redmine_url and self.redmine_user and self.redmine_pass:
+            self.redmine = redmine.Redmine(self.redmine_url, auth=(self.redmine_user,self.redmine_pass))
+            self.redmine.getIssue(7783)
             if not self.redmine:
                 self.source = SOURCE_NONE
         else:
@@ -118,6 +119,7 @@ class ActivitiesSource(object):
         self.jira_query = conf.get("jira_query")
         self.jira_category = conf.get("jira_category_field")
         self.jira_fields=','.join(['summary', self.jira_category])
+        logger.info("user: %s, pass: %s" % (self.jira_user, self.jira_pass[2:4]))
         if self.jira_url and self.jira_user and self.jira_pass:
             options = {'server': self.jira_url}
             self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)
@@ -183,7 +185,7 @@ class ActivitiesSource(object):
                 activities.extend(third_activities)
             return activities
         elif self.source == SOURCE_REDMINE:
-            activities = self.__extract_from_redmine(query, self.rt_query)
+            activities = self.__extract_from_redmine(query, self.redmine_query)
             direct_issue = None
             if query and re.match("^[0-9]+$", query):
                 issue = self.redmine.getIssue(query)
@@ -192,9 +194,9 @@ class ActivitiesSource(object):
             if direct_issue:
                 activities.append(direct_issue)
             if len(activities) <= 2 and not direct_issue and len(query) >= MIN_QUERY_LENGTH:
-                rt_query = ({'status_id': 'open', 'subject': query})
-                #logging.warn(rt_query)
-                third_activities = self.__extract_from_redmine(query, rt_query)
+                redmine_query = ({'status_id': 'open', 'subject': query})
+                #logging.warn(redmine_query)
+                third_activities = self.__extract_from_redmine(query, redmine_query)
                 if activities and third_activities:
                     activities.append({"name": "---------------------", "category": "other open"})
                 activities.extend(third_activities)
@@ -308,7 +310,7 @@ class ActivitiesSource(object):
                 if query is None or all(item in activity['name'].lower() for item in query.lower().split(' ')):
                     activities.append(activity)
         except Exception as e:
-            logging.warn(e)
+            logger.warn(e)
         return activities
     
     def __get_jira_projects(self):
@@ -370,5 +372,5 @@ def get_eds_tasks():
                         tasks.append({'name': task.get_summary(), 'category' : category})
         return tasks
     except Exception, e:
-        logging.warn(e)
+        logger.warn(e)
         return []

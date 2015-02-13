@@ -152,50 +152,6 @@ class ExportRtController(gtk.Object):
         gtk.Object.__init__(self)
         
         self.source = conf.get("activities_source")
-#         self.rt = None
-#         self.redmine = None
-#         self.jira = None
-#
-#         if self.source == SOURCE_RT:
-# #            Init RT
-#             self.rt_url = conf.get("rt_url")
-#             self.rt_user = conf.get("rt_user")
-#             self.rt_pass = conf.get("rt_pass")
-# 
-#             self.rt = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
-#             if not self.rt.login():
-#                 self.rt = None
-#         elif self.source == SOURCE_REDMINE:
-#             self.rt_url = conf.get("rt_url")
-#             self.rt_user = conf.get("rt_user")
-#             self.rt_pass = conf.get("rt_pass")
-# 
-#             if self.rt_url and self.rt_user and self.rt_pass:
-#                 try:
-#                     self.redmine = redmine.Redmine(self.rt_url, auth=(self.rt_user,self.rt_pass))
-#                     if not self.redmine:
-#                         self.source = SOURCE_NONE
-#                 except:
-#                     self.source = SOURCE_NONE
-#             else:
-#                 self.source = SOURCE_NONE
-# 
-#         elif jira_active and self.source == SOURCE_JIRA:
-#             self.jira_url = conf.get("jira_url")
-#             self.jira_user = conf.get("jira_user")
-#             self.jira_pass = conf.get("jira_pass")
-#             self.jira_query = conf.get("jira_query")
-#             self.jira_category = conf.get("jira_category_field")
-#             self.jira_fields=','.join(['summary', self.jira_category])
-#             if self.jira_url and self.jira_user and self.jira_pass:
-#                 try:
-#                     options = {'server': self.jira_url}
-#                     self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)
-#                 except Exception as e:
-#                     logging.warn('jira connection failed: '+str(e))
-#                     self.source = SOURCE_NONE
-#             else:
-#                 self.source = SOURCE_NONE
                 
         self._gui = load_ui_file("export_rt.ui")
         self.window = self.get_widget('report_rt_window')

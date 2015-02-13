@@ -172,6 +172,24 @@ class PreferencesEditor(gtk.Object):
         self.jira_category_field.connect("changed", self.on_jira_category_field_changed)
         self.get_widget('jira_category_field').add(self.jira_category_field)
 
+        # Redmine prefs
+        self.redmine_url = gtk.Entry()
+        self.redmine_url.connect("changed", self.on_redmine_url_changed)
+        self.get_widget('redmine_url').add(self.redmine_url)
+
+        self.redmine_user = gtk.Entry()
+        self.redmine_user.connect("changed", self.on_redmine_user_changed)
+        self.get_widget('redmine_user').add(self.redmine_user)
+
+        self.redmine_pass = gtk.Entry()
+        self.redmine_pass.set_visibility(False)
+        self.redmine_pass.connect("changed", self.on_redmine_pass_changed)
+        self.get_widget('redmine_pass').add(self.redmine_pass)
+
+        self.redmine_query = gtk.Entry()
+        self.redmine_query.connect("changed", self.on_redmine_query_changed)
+        self.get_widget('redmine_query').add(self.redmine_query)
+
         # create and fill activity tree
         self.activity_tree = self.get_widget('activity_list')
         self.get_widget("activities_label").set_mnemonic_widget(self.activity_tree)
@@ -349,6 +367,20 @@ class PreferencesEditor(gtk.Object):
     def on_jira_category_field_changed(self, entry):
         conf.set('jira_category_field', self.jira_category_field.get_text())
 
+
+    def on_redmine_url_changed(self, entry):
+        conf.set('redmine_url', self.redmine_url.get_text())
+
+    def on_redmine_user_changed(self, entry):
+        conf.set('redmine_user', self.redmine_user.get_text())
+
+    def on_redmine_pass_changed(self, entry):
+        conf.set('redmine_pass', self.redmine_pass.get_text())
+
+    def on_redmine_query_changed(self, entry):
+        conf.set('redmine_query', self.redmine_query.get_text())
+
+
     def on_todo_combo_changed(self, combo):
         conf.set("activities_source", self.activities_sources[combo.get_active()][0])
 
@@ -422,7 +454,12 @@ class PreferencesEditor(gtk.Object):
         self.jira_pass.set_text(conf.get('jira_pass'))
         self.jira_query.set_text(conf.get('jira_query'))
         self.jira_category_field.set_text(conf.get('jira_category_field'))
-        
+
+        self.redmine_url.set_text(conf.get('redmine_url'))
+        self.redmine_user.set_text(conf.get('redmine_user'))
+        self.redmine_pass.set_text(conf.get('redmine_pass'))
+        self.redmine_query.set_text(conf.get('redmine_query'))
+
         self.get_widget("icon_glow").set_active(conf.get("icon_glow"))
         self.get_widget("show_label").set_active(conf.get("show_label"))
         self.get_widget("label_length").set_sensitive(conf.get("show_label"))
@@ -883,4 +920,3 @@ class PreferencesEditor(gtk.Object):
 
     def on_preferences_window_destroy(self, window):
         self.window = None
-    
