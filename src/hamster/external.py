@@ -72,6 +72,7 @@ class ActivitiesSource(object):
         self.redmine = None
         self.jira = None
         self.jira_projects = None
+        self.jira_issue_types = None
         self.jira_query = None
         
         try:
@@ -118,12 +119,13 @@ class ActivitiesSource(object):
         self.jira_pass = conf.get("jira_pass")
         self.jira_query = conf.get("jira_query")
         self.jira_category = conf.get("jira_category_field")
-        self.jira_fields=','.join(['summary', self.jira_category])
+        self.jira_fields=','.join(['summary', self.jira_category, 'issuetype'])
         logger.info("user: %s, pass: %s" % (self.jira_user, self.jira_pass[2:4]))
         if self.jira_url and self.jira_user and self.jira_pass:
             options = {'server': self.jira_url}
             self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)
             self.jira_projects = self.__get_jira_projects()
+            self.jira_issue_types = self.__get_jira_issue_types()
         else:
             self.source = SOURCE_NONE
         
@@ -229,6 +231,8 @@ class ActivitiesSource(object):
     def __generate_fragment_jira_query(self, word):
         if word.upper() in self.jira_projects:
             return "project = " + word.upper()
+        elif word.lower() in self.jira_issue_types:
+            return "issuetype = " + word.lower()
         else:
             return "(assignee = '%s' OR summary ~ '%s*')" % (word, word)
         
@@ -280,6 +284,11 @@ class ActivitiesSource(object):
             activity['category'] = getattr(issue.fields, self.jira_category)
         else:
             activity['category'] = ""
+        if not activity['category']:
+            try:
+                activity['category'] = getattr(issue.fields, 'issuetype').name
+            except Exception as e:
+                logger.warn(str(e))
         return activity
 
     def __extract_from_rt(self, query = None, rt_query = None, checkName = True):
@@ -315,6 +324,9 @@ class ActivitiesSource(object):
     
     def __get_jira_projects(self):
         return [project.key for project in self.jira.projects()]
+
+    def __get_jira_issue_types(self):
+        return [issuetype.name.lower() for issuetype in self.jira.issue_types()]
     
     @cache_region('short_term', '__extract_from_jira')
     def __search_jira_issues(self, jira_query = None):
