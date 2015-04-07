@@ -182,7 +182,7 @@ class ExportRtController(gtk.Object):
             elif self.source == SOURCE_JIRA:
                 issue = runtime.get_external().jira.issue(issue_id)
                 row_data = {}
-                row_data['id'] = issue.id
+                row_data['id'] = issue.key
                 row_data['Subject'] = issue.fields.summary
 #                 row_data['source'] = SOURCE_JIRA
 
