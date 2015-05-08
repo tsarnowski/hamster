@@ -120,7 +120,7 @@ class ActivitiesSource(object):
         self.jira_query = conf.get("jira_query")
         self.jira_category = conf.get("jira_category_field")
         self.jira_fields=','.join(['summary', self.jira_category, 'issuetype'])
-        logger.info("user: %s, pass: %s" % (self.jira_user, self.jira_pass[2:4]))
+        logger.info("user: %s, pass: *****" % self.jira_user)
         if self.jira_url and self.jira_user and self.jira_pass:
             options = {'server': self.jira_url}
             self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)

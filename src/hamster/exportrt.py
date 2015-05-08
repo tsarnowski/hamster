@@ -326,7 +326,7 @@ class ExportRtController(gtk.Object):
         else:
             time = 0
 
-        if runtime.get_external().jira.add_worklog(issue = issue_id, comment = text, timeSpent = time) and not test:
+        if runtime.get_external().jira.add_worklog(issue = issue_id, comment = text, timeSpent = "%sm" % time) and not test:
             for fact in facts:
                 runtime.storage.update_fact(fact.id, fact, False,True)
             
