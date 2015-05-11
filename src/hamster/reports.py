@@ -80,6 +80,9 @@ class ReportWriter(object):
     def export(self):
         return self.file.getvalue()
 
+    def correct_tags(self, fact_tags):
+        return ", ".join(fact_tags)
+
     def write_report(self, facts):
         try:
             for fact in facts:
@@ -95,7 +98,7 @@ class ReportWriter(object):
                     else:
                         fact.end_time = ""
 
-                fact.tags = ", ".join(fact.tags)
+                fact.tags = self.correct_tags(fact.tags)
 
                 self._write_fact(fact)
 
@@ -232,6 +235,9 @@ class HTMLWriter(ReportWriter):
         self.by_date_template = self._extract_template('by_date')
 
         self.fact_rows = []
+
+    def correct_tags(self, fact_tags):
+        return fact_tags;
 
     def _extract_template(self, name):
         pattern = re.compile('<%s>(.*)</%s>' % (name, name), re.DOTALL)

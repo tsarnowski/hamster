@@ -206,6 +206,10 @@ class GConfStore(gobject.GObject, Singleton):
         'jira_pass'                     :   "",          # 
         'jira_query'                    :   "resolution = Unresolved AND assignee = currentUser()",
         'jira_category_field'           :   "customfield_10000",
+        'redmine_url'                   :   "http://lm24.pl",
+        'redmine_user'                  :   "",          #
+        'redmine_pass'                  :   "",          #
+        'redmine_query'                 :   "",
 #         from jira.client import JIRA
 #         jira = JIRA(options={'server':'https://jira.unity.pl'}, basic_auth=('gsobczyk', 'secret!'))
 
