@@ -1,4 +1,13 @@
 ===============
+Version 2.1.0
+===============
+ * add settings for redmine in preferences panel add some logging
+ * search by issue types in jira
+ * change id to key on reporting view
+ * correct tags on html report
+ * add time unit (minutes) when reporting to jira
+
+===============
 Version 2.0.0
 ===============
  * jira support
