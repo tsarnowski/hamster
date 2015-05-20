@@ -61,11 +61,11 @@ SOURCE_JIRA = 'jira'
 JIRA_ISSUE_NAME_REGEX = "^(\w+-\d+): "
 ERROR_ADDITIONAL_MESSAGE = '\n\nCheck settings and reopen main window.'
 MIN_QUERY_LENGTH = 4
-    
+
 class ActivitiesSource(object):
     def __init__(self, conf):
         logger.debug('external init')
-#         gobject.GObject.__init__(self)
+        #         gobject.GObject.__init__(self)
         self.source = conf.get("activities_source")
         self.__gtg_connection = None
         self.rt = None
@@ -74,7 +74,7 @@ class ActivitiesSource(object):
         self.jira_projects = None
         self.jira_issue_types = None
         self.jira_query = None
-        
+
         try:
             self.__connect(conf)
         except Exception as e:
@@ -82,12 +82,11 @@ class ActivitiesSource(object):
             self.on_error(error_msg + ERROR_ADDITIONAL_MESSAGE)
             logger.warn(error_msg)
             self.source = SOURCE_NONE
-        
+
     def __connect(self, conf):
         if self.source == SOURCE_EVOLUTION and not evolution:
             self.source = SOURCE_NONE # on failure pretend that there is no evolution
         elif self.source == SOURCE_GTG:
-#             gobject.GObject.__init__(self)
             dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         elif self.source == SOURCE_RT:
             self.__connect_to_rt(conf)
@@ -95,7 +94,7 @@ class ActivitiesSource(object):
             self.__connect_to_redmine(conf)
         elif jira_active and self.source == SOURCE_JIRA:
             self.__connect_to_jira(conf)
-        
+
     def __connect_to_redmine(self, conf):
         self.redmine_url = conf.get("redmine_url")
         self.redmine_user = conf.get("redmine_user")
@@ -111,8 +110,8 @@ class ActivitiesSource(object):
                 self.source = SOURCE_NONE
         else:
             self.source = SOURCE_NONE
-            
-        
+
+
     def __connect_to_jira(self, conf):
         self.jira_url = conf.get("jira_url")
         self.jira_user = conf.get("jira_user")
@@ -128,7 +127,7 @@ class ActivitiesSource(object):
             self.jira_issue_types = self.__get_jira_issue_types()
         else:
             self.source = SOURCE_NONE
-        
+
     def __connect_to_rt(self, conf):
         self.rt_url = conf.get("rt_url")
         self.rt_user = conf.get("rt_user")
@@ -141,14 +140,14 @@ class ActivitiesSource(object):
                 self.source = SOURCE_NONE
         else:
             self.source = SOURCE_NONE
-    
+
     def get_activities(self, query = None):
         if not self.source or not query:
             return []
 
         if self.source == SOURCE_EVOLUTION:
             return [activity for activity in get_eds_tasks()
-                         if query is None or activity['name'].startswith(query)]
+                    if query is None or activity['name'].startswith(query)]
         elif self.source == SOURCE_RT:
             activities = self.__extract_from_rt(query, self.rt_query)
             direct_ticket = None
@@ -227,7 +226,7 @@ class ActivitiesSource(object):
                     activities.append({"name": name, "category": ""})
 
             return activities
-        
+
     def __generate_fragment_jira_query(self, word):
         if word.upper() in self.jira_projects:
             return "project = " + word.upper()
@@ -235,7 +234,7 @@ class ActivitiesSource(object):
             return "issuetype = " + word.lower()
         else:
             return "(assignee = '%s' OR summary ~ '%s*')" % (word, word)
-        
+
     def get_ticket_category(self, activity_id):
         """get activity category depends on source"""
         if not self.source:
@@ -245,15 +244,15 @@ class ActivitiesSource(object):
             ticket = self.rt.get_ticket(activity_id)
             return self.__extract_cat_from_ticket(ticket)
         elif self.source == SOURCE_JIRA:
-#             try: 
-                issue = self.jira.issue(activity_id)
-                return self.__extract_activity_from_jira_issue(issue)
-#             except Exception as e:
-#                 logging.warn(e)
-#                 return ""
+            #             try:
+            issue = self.jira.issue(activity_id)
+            return self.__extract_activity_from_jira_issue(issue)
+        #             except Exception as e:
+        #                 logging.warn(e)
+        #                 return ""
         else:
             return ""
-    
+
     def __extract_activity_from_rt_ticket(self, ticket):
         #activity = {}
         ticket_id = ticket['id']
@@ -262,11 +261,11 @@ class ActivitiesSource(object):
             ticket_id = ticket_id[7:]
         ticket['name'] = '#'+ticket_id+': '+ticket['Subject'].replace(",", " ")
         if 'Owner' in ticket and ticket['Owner']!=self.rt_user:
-            ticket['name'] += " (%s)" % ticket['Owner'] 
+            ticket['name'] += " (%s)" % ticket['Owner']
         ticket['category'] = self.__extract_cat_from_ticket(ticket)
         ticket['rt_id']=ticket_id;
         return ticket
-    
+
     def __extract_activity_from_issue(self, issue):
         activity = {}
         issue_id = issue.id
@@ -274,7 +273,7 @@ class ActivitiesSource(object):
         activity['rt_id']=issue_id;
         activity['category']="";
         return activity
-    
+
     def __extract_activity_from_jira_issue(self, issue):
         activity = {}
         issue_id = issue.key
@@ -293,14 +292,14 @@ class ActivitiesSource(object):
 
     def __extract_from_rt(self, query = None, rt_query = None, checkName = True):
         activities = []
-#         results = self.rt.search_simple(rt_query)
+        #         results = self.rt.search_simple(rt_query)
         results = self.rt.search_raw(rt_query, [self.rt_category])
         for ticket in results:
             activity = self.__extract_activity_from_rt_ticket(ticket)
             if query is None or not checkName or all(item in activity['name'].lower() for item in query.lower().split(' ')):
                 activities.append(activity)
         return activities
-        
+
     def __extract_from_redmine(self, query = None, rt_query = None):
         activities = []
         results = self.redmine.getIssues(rt_query)
@@ -309,7 +308,7 @@ class ActivitiesSource(object):
             if query is None or all(item in activity['name'].lower() for item in query.lower().split(' ')):
                 activities.append(activity)
         return activities
-        
+
     def __extract_from_jira(self, query = None, jira_query = None):
         activities = []
         try:
@@ -321,28 +320,28 @@ class ActivitiesSource(object):
         except Exception as e:
             logger.warn(e)
         return activities
-    
+
     def __get_jira_projects(self):
         return [project.key for project in self.jira.projects()]
 
     def __get_jira_issue_types(self):
         return [issuetype.name.lower() for issuetype in self.jira.issue_types()]
-    
+
     @cache_region('short_term', '__extract_from_jira')
     def __search_jira_issues(self, jira_query = None):
         return self.jira.search_issues(jira_query, fields = self.jira_fields, maxResults = 100)
-        
+
     def __extract_cat_from_ticket(self, ticket):
         category = DEFAULT_RT_CATEGORY
         if 'Queue' in ticket:
             category = ticket['Queue']
         if self.rt_category in ticket and ticket[self.rt_category]:
             category = ticket[self.rt_category]
-#        owner = None
-#        if 'Owner' in ticket:
-#            owner = ticket['Owner']
-#        if owner and owner!=self.rt_user:
-#            category += ":"+owner
+        #        owner = None
+        #        if 'Owner' in ticket:
+        #            owner = ticket['Owner']
+        #        if owner and owner!=self.rt_user:
+        #            category += ":"+owner
         return category
 
     def __get_gtg_connection(self):
@@ -356,11 +355,11 @@ class ActivitiesSource(object):
             return self.__gtg_connection
         else:
             return None
-    
+
     def on_error(self, msg):
-        md = gtk.MessageDialog(None, 
-            gtk.DIALOG_DESTROY_WITH_PARENT, gtk.MESSAGE_ERROR, 
-            gtk.BUTTONS_CLOSE, msg)
+        md = gtk.MessageDialog(None,
+                               gtk.DIALOG_DESTROY_WITH_PARENT, gtk.MESSAGE_ERROR,
+                               gtk.BUTTONS_CLOSE, msg)
         md.run()
         md.destroy()
 
