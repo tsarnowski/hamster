@@ -262,7 +262,7 @@ class ExportRtController(gtk.Object):
                     export_rows.append(self.tree_store.get_value(child_iter, 0))
                     child_iter = self.tree_store.iter_next(child_iter)
                 #report tickets
-                if group_comments and self.source != SOURCE_JIRA:
+                if group_comments:
                     comment = "\n".join("%s - %s min"% (row.comment, row.time_worked) for row in export_rows)
                     time_worked = sum([row.time_worked for row in export_rows])
                     facts = [row.fact for row in export_rows]
@@ -333,7 +333,7 @@ class ExportRtController(gtk.Object):
 #                fact_row.selected = False
             
     def __add_jira_worklog(self, issue_id, text, time_worked, facts):
-        started = facts[0].end_time.replace(tzinfo=tz.tzlocal())
+        started = min(fact.start_time for fact in facts)
         test = self.test_checkox.get_active()
         #        logging.warn(_("updating ticket #%s: %s min, comment: \n%s") % (ticket_id, time_worked, text))
         if not test:
