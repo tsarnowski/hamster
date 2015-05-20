@@ -221,7 +221,6 @@ class ExportRtController(gtk.Object):
         self.start_button = self.get_widget("start_button")
         self.get_widget("activities").add(self.view)
         self.aggregate_comments_checkbox = self.get_widget("aggregate_comments_checkbox")
-        self.aggregate_comments_checkbox.set_active(True)
         self.test_checkox = self.get_widget("test_checkbox")
         self.test_checkox.set_active(False)
         self.progressbar = self.get_widget("progressbar")
