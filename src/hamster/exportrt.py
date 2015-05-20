@@ -332,7 +332,7 @@ class ExportRtController(gtk.Object):
 #                fact_row.selected = False
             
     def __add_jira_worklog(self, issue_id, text, time_worked, facts):
-        started = min(fact.start_time for fact in facts)
+        started = min(fact.start_time for fact in facts).replace(tzinfo=tz.tzlocal())
         test = self.test_checkox.get_active()
         #        logging.warn(_("updating ticket #%s: %s min, comment: \n%s") % (ticket_id, time_worked, text))
         if not test:
