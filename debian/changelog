@@ -1,3 +1,10 @@
+hamster-integration (2.2.0.0) precise; urgency=emergency
+  * #25 about window version number
+  * #20 Jira worklog date
+  * projecthamster#76 Report total incorrect
+
+ -- Tomasz Sarnowski <sarnowskitomek@gmail.com>  Wed, 27 May 2015 20:03:40 +0200
+
 hamster-integration (2.1.0.0) precise; urgency=emergency
   * add settings for redmine in preferences panel add some logging
   * search by issue types in jira
