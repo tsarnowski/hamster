@@ -401,6 +401,7 @@ class Storage(storage.Storage):
     def __touch_fact(self, fact, end_time = None):
         end_time = end_time or dt.datetime.now()
         # tasks under one minute do not count
+        end_time = self.__round_seconds(end_time)
         if end_time - fact['start_time'] < datetime.timedelta(minutes = 1):
             self.__remove_fact(fact['id'])
         else:
@@ -416,6 +417,8 @@ class Storage(storage.Storage):
         """ tries to put task in the given date
             if there are conflicts, we will only truncate the ongoing task
             and replace it's end part with our activity """
+
+        start_time = self.__round_seconds(start_time)
 
         # we are checking if our start time is in the middle of anything
         # or maybe there is something after us - so we know to adjust end time
@@ -452,6 +455,9 @@ class Storage(storage.Storage):
         """
         if end_time is None or start_time is None:
             return
+
+        start_time = self.__round_seconds(start_time)
+        end_time = self.__round_seconds(end_time)
 
         # possible combinations and the OR clauses that catch them
         # (the side of the number marks if it catches the end or start time)
@@ -516,7 +522,6 @@ class Storage(storage.Storage):
                 self.execute("UPDATE facts SET end_time=? WHERE id=?",
                              (start_time, fact["id"]))
 
-
     def __add_fact(self, serialized_fact, start_time, end_time = None, temporary = False, exported = False):
         fact = Fact(serialized_fact,
                     start_time = start_time,
@@ -525,6 +530,9 @@ class Storage(storage.Storage):
 
         start_time = start_time or fact.start_time
         end_time = end_time or fact.end_time
+
+        start_time = self.__round_seconds(start_time)
+        end_time = self.__round_seconds(end_time)
 
         if not fact.activity or start_time is None:  # sanity check
             return 0

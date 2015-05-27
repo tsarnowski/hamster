@@ -23,6 +23,7 @@ import logging
 from itertools import groupby
 import math
 
+from dateutil import tz
 from lib import rt, stuff, redmine
 from lib.rt import TICKET_NAME_REGEX
 from external import SOURCE_NONE
@@ -220,7 +221,6 @@ class ExportRtController(gtk.Object):
         self.start_button = self.get_widget("start_button")
         self.get_widget("activities").add(self.view)
         self.aggregate_comments_checkbox = self.get_widget("aggregate_comments_checkbox")
-        self.aggregate_comments_checkbox.set_active(True)
         self.test_checkox = self.get_widget("test_checkbox")
         self.test_checkox.set_active(False)
         self.progressbar = self.get_widget("progressbar")
@@ -255,7 +255,7 @@ class ExportRtController(gtk.Object):
             while it:
                 ticket_row = self.tree_store.get_value(it, 0)
                 child_iter = self.tree_store.iter_children(it)
-                #get childs
+                #get children
                 export_rows = []
                 while child_iter:
                     export_rows.append(self.tree_store.get_value(child_iter, 0))
@@ -265,11 +265,24 @@ class ExportRtController(gtk.Object):
                     comment = "\n".join("%s - %s min"% (row.comment, row.time_worked) for row in export_rows)
                     time_worked = sum([row.time_worked for row in export_rows])
                     facts = [row.fact for row in export_rows]
-                    to_report_list.append({'id':ticket_row.id, 'name':ticket_row.name, 'comment':comment, 'time':time_worked, 'facts':facts, 'date': row.date})
+                    to_report_list.append({
+                        'id':ticket_row.id,
+                        'name':ticket_row.name,
+                        'comment':comment,
+                        'time':time_worked,
+                        'facts':facts,
+                        'date': row.date
+                    })
                 else:
                     for row in export_rows:
-                        to_report_list.append({'id':ticket_row.id, 'name':ticket_row.name, 'comment':"%s - %s min"% (row.comment, row.time_worked), 'time':row.time_worked, 'facts':[row.fact], 'date': row.date})
-#                        self.__add_rt_worklog(ticket_row.id, "%s - %s min"% (row.comment, row.time_worked), row.time_worked, [row.fact])
+                        to_report_list.append({
+                            'id':ticket_row.id,
+                            'name':ticket_row.name,
+                            'comment':"%s - %s min"% (row.comment, row.time_worked),
+                            'time':row.time_worked,
+                            'facts':[row.fact],
+                            'date': row.date
+                        })
                 it = self.tree_store.iter_next(it)
             to_report_len = len(to_report_list)
             self.progressbar.set_fraction(0.0)
@@ -319,14 +332,15 @@ class ExportRtController(gtk.Object):
 #                fact_row.selected = False
             
     def __add_jira_worklog(self, issue_id, text, time_worked, facts):
+        started = min(fact.start_time for fact in facts).replace(tzinfo=tz.tzlocal())
         test = self.test_checkox.get_active()
-#        logging.warn(_("updating ticket #%s: %s min, comment: \n%s") % (ticket_id, time_worked, text))
+        #        logging.warn(_("updating ticket #%s: %s min, comment: \n%s") % (ticket_id, time_worked, text))
         if not test:
             time = time_worked
         else:
             time = 0
 
-        if runtime.get_external().jira.add_worklog(issue = issue_id, comment = text, timeSpent = "%sm" % time) and not test:
+        if runtime.get_external().jira.add_worklog(issue = issue_id, comment = text, timeSpent = "%sm" % time, started=started) and not test:
             for fact in facts:
                 runtime.storage.update_fact(fact.id, fact, False,True)
             
