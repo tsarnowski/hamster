@@ -13,7 +13,7 @@ def configure(conf):
     conf.check_python_version((2,4,2))
 
     conf.check_tool('gnome intltool dbus')
-    conf.check_tool('gconf appindicator requests beaker wnck pytz jira')
+    # conf.check_tool('gconf appindicator requests beaker wnck pytz jira')
 
     conf.define('ENABLE_NLS', 1)
     conf.define('HAVE_BIND_TEXTDOMAIN_CODESET', 1)
