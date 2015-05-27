@@ -51,7 +51,7 @@ class About(object):
                            "Patryk Zawadzki <patrys@pld-linux.org>",
                            "Pēteris Caune <cuu508@gmail.com>",
                            "Juanje Ojeda <jojeda@emergya.es>",
-                           "Grzegorz Sobczyk <grzegorz.sobczyk@unity.pl"])
+                           "Grzegorz Sobczyk <grzegorz.sobczyk@unity.pl>"])
         about.set_artists(["Kalle Persson <kalle@kallepersson.se>"])
 
         about.set_translator_credits(_("translator-credits"))
