@@ -3,8 +3,8 @@ Details here: http://projecthamster.wordpress.com/2013/05/13/hamster-is-looking-
 
 h1. Dependencies
 
-Debian-based: @apt-get install git-core gettext intltool python-gconf python-requests python-beaker python-wnck python-dateutil@
-RPM-based: @yum install git-core gettext intltool gnome-python2-gconf python-requests python-beaker python-wnck python-dateutil@
+Debian-based: @apt-get install git-core gettext intltool python-gconf python-requests python-beaker python-wnck python-tz@
+RPM-based: @yum install git-core gettext intltool gnome-python2-gconf python-requests python-beaker python-wnck python-tz@
 Other: 
 * @apt-get install python-appindicator@ (for xfce)
 * @apt-get install python-pip@
@@ -27,7 +27,7 @@ h1. RT features
 
 h2. Settings
 
-!https://raw.github.com/gsobczyk/hamster/master/settings.png!
+!https://raw.github.com/gsobczyk/hamster/master/doc/screen/settings.png!
 
 h2. Search
 
@@ -51,7 +51,7 @@ produces:
 * #87013: Mieloch - prace serwisowe
 * #76614: Eltron- serwis
 
-!https://raw.github.com/gsobczyk/hamster/master/entry.png!
+!https://raw.github.com/gsobczyk/hamster/master/doc/screen/entry.png!
 
 h3. Back to the future (past)
 
@@ -80,7 +80,7 @@ h2. Export to RT
 
 From @Show preview@ window you can export times to RT. Simply select tickets to export (exported are not selected) and @Report selected...@. This will bring the window where you can choose to group comments and test export. There is possibility to edit comment and time amount (just double click on time entry or comment).
 
-!https://raw.github.com/gsobczyk/hamster/master/rt-export.png!
+!https://raw.github.com/gsobczyk/hamster/master/doc/screen/rt-export.png!
 
 
 h1. hamster-applet -> hamster-time-tracker clean up
