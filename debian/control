@@ -29,7 +29,8 @@ Depends: ${misc:Depends},
 	python-requests,
 	python-beaker,
 	python-jira,
-	python-tz
+	python-tz,
+	python-dateutil
 Recommends: python-notify,
             gnome-icon-theme
 Suggests: python-evolution
