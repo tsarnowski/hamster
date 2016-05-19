@@ -99,7 +99,7 @@ def cmd_and_log(self,cmd,kw):
 	try:
 		p=Utils.pproc.Popen(cmd,stdout=Utils.pproc.PIPE,stderr=Utils.pproc.PIPE,shell=True)
 		(out,err)=p.communicate()
-	except OSError,e:
+	except OSError as e:
 		self.log.write('error %r'%e)
 		self.fatal(str(e))
 	out=str(out)

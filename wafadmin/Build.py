@@ -215,7 +215,7 @@ class BuildContext(Utils.Context):
 	def load_envs(self):
 		try:
 			lst=Utils.listdir(self.cachedir)
-		except OSError,e:
+		except OSError as e:
 			if e.errno==errno.ENOENT:
 				raise Utils.WafError('The project was not configured: run "waf configure" first!')
 			else:
@@ -511,7 +511,7 @@ class BuildContext(Utils.Context):
 			self.uninstall.append(tgt)
 			try:
 				os.remove(tgt)
-			except OSError,e:
+			except OSError as e:
 				if e.errno!=errno.ENOENT:
 					if not getattr(self,'uninstall_error',None):
 						self.uninstall_error=True
