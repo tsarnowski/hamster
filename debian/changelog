@@ -1,3 +1,9 @@
+hamster-integration (2.2.2.0) precise; urgency=emergency
+  * allow build with python3
+  * accept numbers in jira project key
+
+ -- Tomasz Sarnowski <sarnowskitomek@gmail.com>  Mon, 23 May 2016 22:23:40 +0200
+
 hamster-integration (2.2.1.0) precise; urgency=emergency
   * fix waf dependencies
 
