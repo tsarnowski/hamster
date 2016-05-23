@@ -41,7 +41,7 @@ class TaskConsumer(threading.Thread):
 				tsk.generator.bld.printout(tsk.display())
 				if tsk.__class__.stat:ret=tsk.__class__.stat(tsk)
 				else:ret=tsk.call_run()
-			except Exception,e:
+			except Exception as e:
 				tsk.err_msg=Utils.ex_stack()
 				tsk.hasrun=EXCEPTION
 				m.error_handler(tsk)
@@ -129,7 +129,7 @@ class Parallel(object):
 				continue
 			try:
 				st=tsk.runnable_status()
-			except Exception,e:
+			except Exception as e:
 				self.processed+=1
 				if self.stop and not Options.options.keep:
 					tsk.hasrun=SKIPPED

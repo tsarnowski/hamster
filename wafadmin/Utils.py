@@ -312,7 +312,7 @@ def check_dir(dir):
 	except OSError:
 		try:
 			os.makedirs(dir)
-		except OSError,e:
+		except OSError as e:
 			raise WafError("Cannot create folder '%s' (original error: %s)"%(dir,e))
 def cmd_output(cmd,**kw):
 	silent=False
@@ -330,7 +330,7 @@ def cmd_output(cmd,**kw):
 	try:
 		p=pproc.Popen(cmd,**kw)
 		output=p.communicate()[0]
-	except OSError,e:
+	except OSError as e:
 		raise ValueError(str(e))
 	if p.returncode:
 		if not silent:

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # nicked off hamster-service
 
 import gobject

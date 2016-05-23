@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
 # encoding: utf-8
 
 import os,sys,shutil,traceback,datetime,inspect,errno
@@ -103,7 +103,7 @@ def prepare(t,cwd,ver,wafdir):
 		sys.exit(1)
 	try:
 		prepare_impl(t,cwd,ver,wafdir)
-	except Utils.WafError,e:
+	except Utils.WafError as e:
 		error(str(e))
 		sys.exit(1)
 	except KeyboardInterrupt:
@@ -330,12 +330,12 @@ def distclean(ctx=None):
 				shutil.rmtree(proj[BLDDIR])
 			except IOError:
 				pass
-			except OSError,e:
+			except OSError as e:
 				if e.errno!=errno.ENOENT:
 					Logs.warn('project %r cannot be removed'%proj[BLDDIR])
 			try:
 				os.remove(f)
-			except OSError,e:
+			except OSError as e:
 				if e.errno!=errno.ENOENT:
 					Logs.warn('file %r cannot be removed'%f)
 		if not commands and f.startswith('.waf'):
