@@ -1,4 +1,10 @@
 ===============
+Version 2.2.2
+===============
+ * allow build with python3
+ * accept numbers in jira project key
+
+===============
 Version 2.2.1
 ===============
  * fix waf dependencies
