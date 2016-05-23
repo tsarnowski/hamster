@@ -103,7 +103,7 @@ class ConfigurationContext(Utils.Context):
 			module=None
 			try:
 				module=Utils.load_tool(tool,tooldir)
-			except Exception,e:
+			except Exception as e:
 				ex=e
 				if Options.options.download:
 					_3rdparty=os.path.normpath(Options.tooldir[0]+os.sep+'..'+os.sep+'3rdparty')
@@ -114,7 +114,7 @@ class ConfigurationContext(Utils.Context):
 								web=urlopen(url)
 								if web.getcode()!=200:
 									continue
-							except Exception,e:
+							except Exception as e:
 								continue
 							else:
 								loc=None
@@ -291,7 +291,7 @@ class ConfigurationContext(Utils.Context):
 			if not f:self.fatal("No such method '%s'."%x)
 			try:
 				f()
-			except Exception,e:
+			except Exception as e:
 				ret=self.err_handler(x,e)
 				if ret==BREAK:
 					break
