@@ -36,6 +36,8 @@ import os, time
 import datetime
 import storage
 from shutil import copy as copyfile
+from configuration import conf
+from external import ActivitiesSource
 import itertools
 import datetime as dt
 try:
@@ -52,6 +54,9 @@ except:
 
 class Storage(storage.Storage):
     con = None # Connection will be created on demand
+    external = None
+    external_need_update = False
+
     def __init__(self, unsorted_localized="Unsorted", database_dir=None):
         """
         XXX - you have to pass in name for the uncategorized category
@@ -94,6 +99,8 @@ class Storage(storage.Storage):
             self.__db_monitor.connect("changed", on_db_file_change)
 
         self.run_fixtures()
+
+        self.external = ActivitiesSource(conf)
 
     def __init_db_file(self, database_dir):
         if not database_dir:
@@ -639,7 +646,6 @@ class Storage(storage.Storage):
 
     def __get_todays_facts(self):
         try:
-            from configuration import conf
             day_start = conf.get("day_start_minutes")
         except:
             day_start = 5 * 60 # default day start to 5am
@@ -651,7 +657,6 @@ class Storage(storage.Storage):
 
     def __get_facts(self, date, end_date = None, search_terms = "", limit = 0, asc_by_date = True):
         try:
-            from configuration import conf
             day_start = conf.get("day_start_minutes")
         except:
             day_start = 5 * 60 # default day start to 5am
@@ -778,6 +783,9 @@ class Storage(storage.Storage):
 
         return self.fetchall(query, (category_id, ))
 
+
+    def __get_ext_activities(self, search):
+        return self.get_external().get_activities(search)
 
     def __get_activities(self, search):
         """returns list of activities for autocomplete,
@@ -1027,3 +1035,12 @@ class Storage(storage.Storage):
                 trophies.unlock("oldtimer")
 
         self.end_transaction()
+
+    def get_external(self):
+        if self.external_need_update:
+            self.refresh_external(conf)
+        return self.external
+    
+    def refresh_external(self, conf):
+        self.external = ActivitiesSource(conf)
+        self.external_need_update = False

@@ -177,9 +177,9 @@ class ActivitiesSource(object):
                 activities.append(direct_issue)
             if len(activities) <= 2 and not direct_issue and len(query) >= MIN_QUERY_LENGTH:
                 li = query.split(' ')
-                fragments = [self.__generate_fragment_jira_query(word) for word in li]
+                fragments = filter(len, [self.__generate_fragment_jira_query(word) for word in li])
                 jira_query = " AND ".join(fragments) + " AND resolution = Unresolved order by priority desc, updated desc"
-                #logging.warn(rt_query)
+                logging.warn(jira_query)
                 third_activities = self.__extract_from_jira('', jira_query)
                 if activities and third_activities:
                     activities.append({"name": "---------------------", "category": "other open"})
@@ -232,8 +232,10 @@ class ActivitiesSource(object):
             return "project = " + word.upper()
         elif word.lower() in self.jira_issue_types:
             return "issuetype = " + word.lower()
-        else:
+        elif word:
             return "(assignee = '%s' OR summary ~ '%s*')" % (word, word)
+        else:
+            return ""
 
     def get_ticket_category(self, activity_id):
         """get activity category depends on source"""
