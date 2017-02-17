@@ -476,9 +476,9 @@ class Storage(storage.Storage):
                      FROM facts a
                 LEFT JOIN activities b on b.id = a.activity_id
                 LEFT JOIN categories c on b.category_id = c.id
-                    WHERE (end_time > ? and end_time < ?)
-                       OR (start_time > ? and start_time < ?)
-                       OR (start_time < ? and end_time > ?)
+                    WHERE (end_time >= ? and end_time <= ?)
+                       OR (start_time >= ? and start_time <= ?)
+                       OR (start_time <= ? and end_time >= ?)
                  ORDER BY start_time
                 """
         conflicts = self.fetchall(query, (start_time, end_time,
@@ -487,12 +487,12 @@ class Storage(storage.Storage):
 
         for fact in conflicts:
             # won't eliminate as it is better to have overlapping entries than loosing data
-            if start_time < fact["start_time"] and end_time > fact["end_time"]:
+            if start_time < fact["start_time"] and end_time >= fact["end_time"]:
                 continue
 
             # split - truncate until beginning of new entry and create new activity for end
             if fact["start_time"] < start_time < fact["end_time"] and \
-               fact["start_time"] < end_time < fact["end_time"]:
+               fact["start_time"] < end_time <= fact["end_time"]:
 
                 logging.info("splitting %s" % fact["name"])
                 # truncate until beginning of the new entry
@@ -501,30 +501,31 @@ class Storage(storage.Storage):
                                  WHERE id = ?""", (start_time, fact["id"]))
                 fact_name = fact["name"]
 
-                # create new fact for the end
-                new_fact = Fact(fact["name"],
-                                category = fact["category"],
-                                description = fact["description"])
-                new_fact_id = self.__add_fact(new_fact.serialized_name(), end_time, fact["end_time"])
+                if end_time < fact['end_time']:
+                    # create new fact for the end
+                    new_fact = Fact(fact["name"],
+                                    category = fact["category"],
+                                    description = fact["description"])
+                    new_fact_id = self.__add_fact(new_fact.serialized_name(), end_time, fact["end_time"])
 
-                # copy tags
-                tag_update = """INSERT INTO fact_tags(fact_id, tag_id)
-                                     SELECT ?, tag_id
-                                       FROM fact_tags
-                                      WHERE fact_id = ?"""
-                self.execute(tag_update, (new_fact_id, fact["id"])) #clone tags
+                    # copy tags
+                    tag_update = """INSERT INTO fact_tags(fact_id, tag_id)
+                                         SELECT ?, tag_id
+                                           FROM fact_tags
+                                          WHERE fact_id = ?"""
+                    self.execute(tag_update, (new_fact_id, fact["id"])) #clone tags
 
                 if trophies:
                     trophies.unlock("split")
 
             # overlap start
-            elif start_time < fact["start_time"] < end_time:
+            elif start_time <= fact["start_time"] <= end_time:
                 logging.info("Overlapping start of %s" % fact["name"])
                 self.execute("UPDATE facts SET start_time=? WHERE id=?",
                              (end_time, fact["id"]))
 
             # overlap end
-            elif start_time < fact["end_time"] < end_time:
+            elif start_time < fact["end_time"] <= end_time:
                 logging.info("Overlapping end of %s" % fact["name"])
                 self.execute("UPDATE facts SET end_time=? WHERE id=?",
                              (start_time, fact["id"]))
