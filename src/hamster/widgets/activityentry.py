@@ -98,7 +98,7 @@ class ActivityEntry(gtk.Entry):
         ]
 
         self.show()
-        self.populate_suggestions()
+        # self.populate_suggestions()
 
         self.connect("destroy", self.on_destroy)
 
@@ -233,7 +233,7 @@ class ActivityEntry(gtk.Entry):
 
         # do not cache as ordering and available options change over time
         self.activities = runtime.storage.get_activities(fact.activity)
-        self.external_activities = runtime.get_external().get_activities(fact.activity)
+        self.external_activities = runtime.storage.get_ext_activities(fact.activity)
         new_activities = []
         for activity in self.activities:
             match = re.match("^(#\d+: )", activity['name'])
