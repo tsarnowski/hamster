@@ -299,7 +299,7 @@ class ActivityEntry(gtk.Entry):
                     names.append(a['name'])
             
             for activity in filtered:
-                fillable = activity['name'].lower()
+                fillable = activity['name']
                 minutes = None
                 if activity['category']:
                     fillable += "@%s" % activity['category']
@@ -308,7 +308,7 @@ class ActivityEntry(gtk.Entry):
                     minutes = self.filter.split(" ", 1)[0]
                     fillable = "%s %s" % (minutes, fillable)
 
-                store.append([fillable, activity['name'].lower(), activity['category'], time, activity.get('rt_id'), minutes])
+                store.append([fillable, activity['name'], activity['category'], time, activity.get('rt_id'), minutes])
 
     def after_activity_update(self, widget):
         self.refresh_activities()
