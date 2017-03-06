@@ -112,6 +112,8 @@ class TimeInput(gtk.Entry):
                 hours = int(numbers[0])
             if len(numbers) >= 2:
                 minutes = int(numbers[1])
+            else:
+                minutes = 0
 
         if (hours is None or minutes is None) or hours > 24 or minutes > 60:
             return self.time #no can do

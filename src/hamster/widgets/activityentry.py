@@ -279,24 +279,20 @@ class ActivityEntry(gtk.Entry):
             activities_to_append = []
             if conf.get("remote_activities_only"):
                 if not self.external_activities:
-                    for a in self.activities:
-                        activities_to_append.append(a)
+                    activities_to_append.extend(self.activities)
                 else:
-                    for a in self.external_activities:
-                        activities_to_append.append(a)
+                    activities_to_append.extend(self.external_activities)
             else:
-                for a in self.activities:
-                    activities_to_append.append(a)
+                activities_to_append.extend(self.activities)
                 if self.external_activities:
-                    for a in self.external_activities:
-                        activities_to_append.append(a)
+                    activities_to_append.extend(self.external_activities)
 
             filtered = []
             names = []
             for a in activities_to_append:
-                if not a['name'] in names:
+                if not a['name'].lower() in names:
                     filtered.append(a)
-                    names.append(a['name'])
+                    names.append(a['name'].lower())
             
             for activity in filtered:
                 fillable = activity['name']
