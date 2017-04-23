@@ -282,7 +282,7 @@ class ActivitiesSource(object):
         activity['name'] = str(issue_id)+': '+issue.fields.summary.replace(",", " ")
         activity['rt_id'] = issue_id
         if hasattr(issue.fields, self.jira_category):
-            activity['category'] = getattr(issue.fields, self.jira_category)
+            activity['category'] = str(getattr(issue.fields, self.jira_category))
         else:
             activity['category'] = ""
         if not activity['category']:
