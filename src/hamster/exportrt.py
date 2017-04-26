@@ -62,9 +62,10 @@ class ExportRow(object):
            and other.fact.id == self.fact.id
 
     def get_text(self, fact):
-        text = "%s, %s-%s" % (fact.date, fact.start_time.strftime("%H:%M"), fact.end_time.strftime("%H:%M"))
+        text = ""
         if fact.description:
-            text += ": %s" % (fact.description)
+            text += "%s\n" % (fact.description)
+        text += "%s, %s-%s" % (fact.date, fact.start_time.strftime("%H:%M"), fact.end_time.strftime("%H:%M"))
         if fact.tags:
             text += " ("+", ".join(fact.tags)+")"
         return text
