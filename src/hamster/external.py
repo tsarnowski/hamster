@@ -28,6 +28,7 @@ from lib import rt
 from lib import redmine
 from lib.rt import DEFAULT_RT_CATEGORY
 from beaker.cache import cache_regions, cache_region
+import socket
 
 jira_active = True
 try:
@@ -106,7 +107,7 @@ class ActivitiesSource(object):
             self.redmine_query = json.loads(conf.get("redmine_query"))
         except Exception:
             self.redmine_query = ({})
-        if self.redmine_url and self.redmine_user and self.redmine_pass:
+        if self.redmine_url and self.redmine_user and self.redmine_pass and self.__is_connected(self.redmine_url):
             self.redmine = redmine.Redmine(self.redmine_url, auth=(self.redmine_user, self.redmine_pass))
             self.redmine.getIssue(7783)
             if not self.redmine:
@@ -122,7 +123,7 @@ class ActivitiesSource(object):
         self.jira_category = conf.get("jira_category_field")
         self.jira_fields = ','.join(['summary', self.jira_category, 'issuetype'])
         logger.info("user: %s, pass: *****" % self.jira_user)
-        if self.jira_url and self.jira_user and self.jira_pass:
+        if self.jira_url and self.jira_user and self.jira_pass and self.__is_connected(self.jira_url):
             options = {'server': self.jira_url}
             self.jira = JIRA(options, basic_auth = (self.jira_user, self.jira_pass), validate = True)
             self.jira_projects = self.__get_jira_projects()
@@ -136,7 +137,7 @@ class ActivitiesSource(object):
         self.rt_pass = conf.get("rt_pass")
         self.rt_query = conf.get("rt_query")
         self.rt_category = conf.get("rt_category_field")
-        if self.rt_url and self.rt_user and self.rt_pass:
+        if self.rt_url and self.rt_user and self.rt_pass and self.__is_connected(self.rt_url):
             self.rt = rt.Rt(self.rt_url, self.rt_user, self.rt_pass)
             if not self.rt.login():
                 self.source = SOURCE_NONE
@@ -369,6 +370,20 @@ class ActivitiesSource(object):
                                gtk.BUTTONS_CLOSE, msg)
         md.run()
         md.destroy()
+
+    # https://stackoverflow.com/questions/20913411/test-if-an-internet-connection-is-present-in-python
+    def __is_connected(self, url):
+        try:
+            # see if we can resolve the host name -- tells us if there is
+            # a DNS listening
+            host = socket.gethostbyname(url)
+            # connect to the host -- tells us if the host is actually
+            # reachable
+            s = socket.create_connection((host, 80), 1)
+            return True
+        except:
+            pass
+        return False
 
 
 def get_eds_tasks():
