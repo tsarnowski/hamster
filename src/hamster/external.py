@@ -28,7 +28,7 @@ from lib import rt
 from lib import redmine
 from lib.rt import DEFAULT_RT_CATEGORY
 from beaker.cache import cache_regions, cache_region
-import socket
+import urllib2
 
 jira_active = True
 try:
@@ -178,7 +178,7 @@ class ActivitiesSource(object):
                 issue = self.jira.issue(query.upper())
                 if issue:
                     direct_issue = self.__extract_activity_from_jira_issue(issue)
-            if direct_issue:
+            if direct_issue and direct_issue not in activities:
                 activities.append(direct_issue)
             if len(activities) <= CURRENT_USER_ACTIVITIES_LIMIT and not direct_issue and len(query) >= MIN_QUERY_LENGTH:
                 li = query.split(' ')
@@ -373,13 +373,9 @@ class ActivitiesSource(object):
 
     # https://stackoverflow.com/questions/20913411/test-if-an-internet-connection-is-present-in-python
     def __is_connected(self, url):
+        # return True
         try:
-            # see if we can resolve the host name -- tells us if there is
-            # a DNS listening
-            host = socket.gethostbyname(url)
-            # connect to the host -- tells us if the host is actually
-            # reachable
-            s = socket.create_connection((host, 80), 1)
+            urllib2.urlopen(url, timeout=1)
             return True
         except:
             pass
