@@ -50,7 +50,7 @@ class RuntimeStore(Singleton):
     storage = None
     conf = None
     external = None
-    external_need_update = False
+    external_need_update = True
 
 
     def __init__(self):
@@ -158,8 +158,8 @@ class Dialogs(Singleton):
         self.prefs = OneWindow(get_prefs_class)
 
         def get_export_rt_class():
-            from exportrt import ExportRtController
-            return ExportRtController
+            from exporter import ExporterController
+            return ExporterController
         self.export_rt = OneWindow(get_export_rt_class)
 
 dialogs = Dialogs()
@@ -223,7 +223,7 @@ class GConfStore(gobject.GObject, Singleton):
         self._client = gconf.client_get_default()
         self._client.add_dir(self.GCONF_DIR[:-1], gconf.CLIENT_PRELOAD_RECURSIVE)
         self._notifications = []
-        runtime.refresh_external(self)
+        #runtime.refresh_external(self)
 
     def _fix_key(self, key):
         """

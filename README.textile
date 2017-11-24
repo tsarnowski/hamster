@@ -8,6 +8,7 @@ RPM-based: @yum install git-core gettext intltool gnome-python2-gconf python-req
 Other: 
 * @apt-get install python-appindicator@ (for xfce)
 * @apt-get install python-pip@
+* @pip install python-dateutil@
 * @pip install jira==0.33@ or use debian package (@jira-python@ at @ppa:sarnowskitomek/hamter-intergration@)
 
 h1. Installing
@@ -58,6 +59,11 @@ h3. Back to the future (past)
 If you want start activity whitch should be tracked for 17 minutes, just write:
 
 bc. -17 lm dzp zarzą
+
+h1. Jira features
+
+It's very similar to RT integration - allows searching issues and raporting time spent on
+issues to jira.
 
 h2. Tray
 
