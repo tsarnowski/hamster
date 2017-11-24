@@ -5,7 +5,7 @@ hamster-integration (2.3.0.0) precise; urgency=emergency
   * detect network connection prevents long startup
   * fix for autocomplete issues - possible to suggest keys with number in project part, eg. ABC1-5432
 
- -- Tomasz Sarnowski <sarnowskitomek@gmail.com>  Mon, 23 May 2016 22:23:40 +0200
+ -- Tomasz Sarnowski <sarnowskitomek@gmail.com>  Fri, 24 Nov 2017 21:23:40 +0200
 
 hamster-integration (2.2.2.0) precise; urgency=emergency
   * allow build with python3
