@@ -98,7 +98,7 @@ class ActivityEntry(gtk.Entry):
         ]
 
         self.show()
-        self.populate_suggestions()
+        # self.populate_suggestions()
 
         self.connect("destroy", self.on_destroy)
 
@@ -233,7 +233,7 @@ class ActivityEntry(gtk.Entry):
 
         # do not cache as ordering and available options change over time
         self.activities = runtime.storage.get_activities(fact.activity)
-        self.external_activities = runtime.get_external().get_activities(fact.activity)
+        self.external_activities = runtime.storage.get_ext_activities(fact.activity)
         new_activities = []
         for activity in self.activities:
             match = re.match("^(#\d+: )", activity['name'])
@@ -279,27 +279,23 @@ class ActivityEntry(gtk.Entry):
             activities_to_append = []
             if conf.get("remote_activities_only"):
                 if not self.external_activities:
-                    for a in self.activities:
-                        activities_to_append.append(a)
+                    activities_to_append.extend(self.activities)
                 else:
-                    for a in self.external_activities:
-                        activities_to_append.append(a)
+                    activities_to_append.extend(self.external_activities)
             else:
-                for a in self.activities:
-                    activities_to_append.append(a)
+                activities_to_append.extend(self.activities)
                 if self.external_activities:
-                    for a in self.external_activities:
-                        activities_to_append.append(a)
+                    activities_to_append.extend(self.external_activities)
 
             filtered = []
             names = []
             for a in activities_to_append:
-                if not a['name'] in names:
+                if not a['name'].lower() in names:
                     filtered.append(a)
-                    names.append(a['name'])
+                    names.append(a['name'].lower())
             
             for activity in filtered:
-                fillable = activity['name'].lower()
+                fillable = activity['name']
                 minutes = None
                 if activity['category']:
                     fillable += "@%s" % activity['category']
@@ -308,7 +304,7 @@ class ActivityEntry(gtk.Entry):
                     minutes = self.filter.split(" ", 1)[0]
                     fillable = "%s %s" % (minutes, fillable)
 
-                store.append([fillable, activity['name'].lower(), activity['category'], time, activity.get('rt_id'), minutes])
+                store.append([fillable, activity['name'], activity['category'], time, activity.get('rt_id'), minutes])
 
     def after_activity_update(self, widget):
         self.refresh_activities()

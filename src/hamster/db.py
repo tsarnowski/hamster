@@ -36,6 +36,8 @@ import os, time
 import datetime
 import storage
 from shutil import copy as copyfile
+from configuration import conf
+from external import ActivitiesSource
 import itertools
 import datetime as dt
 try:
@@ -52,6 +54,9 @@ except:
 
 class Storage(storage.Storage):
     con = None # Connection will be created on demand
+    external = None
+    external_need_update = False
+
     def __init__(self, unsorted_localized="Unsorted", database_dir=None):
         """
         XXX - you have to pass in name for the uncategorized category
@@ -94,6 +99,8 @@ class Storage(storage.Storage):
             self.__db_monitor.connect("changed", on_db_file_change)
 
         self.run_fixtures()
+
+        self.external = ActivitiesSource(conf)
 
     def __init_db_file(self, database_dir):
         if not database_dir:
@@ -469,9 +476,9 @@ class Storage(storage.Storage):
                      FROM facts a
                 LEFT JOIN activities b on b.id = a.activity_id
                 LEFT JOIN categories c on b.category_id = c.id
-                    WHERE (end_time > ? and end_time < ?)
-                       OR (start_time > ? and start_time < ?)
-                       OR (start_time < ? and end_time > ?)
+                    WHERE (end_time >= ? and end_time <= ?)
+                       OR (start_time >= ? and start_time <= ?)
+                       OR (start_time <= ? and end_time >= ?)
                  ORDER BY start_time
                 """
         conflicts = self.fetchall(query, (start_time, end_time,
@@ -479,13 +486,19 @@ class Storage(storage.Storage):
                                           start_time, end_time))
 
         for fact in conflicts:
+            if fact["start_time"] is None:
+                continue
+
+            # handle case with not finished activities
+            fact_end_time = fact["end_time"] or dt.datetime.now()
+
             # won't eliminate as it is better to have overlapping entries than loosing data
-            if start_time < fact["start_time"] and end_time > fact["end_time"]:
+            if start_time < fact["start_time"] and end_time >= fact_end_time:
                 continue
 
             # split - truncate until beginning of new entry and create new activity for end
-            if fact["start_time"] < start_time < fact["end_time"] and \
-               fact["start_time"] < end_time < fact["end_time"]:
+            if fact["start_time"] < start_time < fact_end_time and \
+               fact["start_time"] < end_time <= fact_end_time:
 
                 logging.info("splitting %s" % fact["name"])
                 # truncate until beginning of the new entry
@@ -494,30 +507,31 @@ class Storage(storage.Storage):
                                  WHERE id = ?""", (start_time, fact["id"]))
                 fact_name = fact["name"]
 
-                # create new fact for the end
-                new_fact = Fact(fact["name"],
-                                category = fact["category"],
-                                description = fact["description"])
-                new_fact_id = self.__add_fact(new_fact.serialized_name(), end_time, fact["end_time"])
+                if end_time < fact['end_time']:
+                    # create new fact for the end
+                    new_fact = Fact(fact["name"],
+                                    category = fact["category"],
+                                    description = fact["description"])
+                    new_fact_id = self.__add_fact(new_fact.serialized_name(), end_time, fact_end_time)
 
-                # copy tags
-                tag_update = """INSERT INTO fact_tags(fact_id, tag_id)
-                                     SELECT ?, tag_id
-                                       FROM fact_tags
-                                      WHERE fact_id = ?"""
-                self.execute(tag_update, (new_fact_id, fact["id"])) #clone tags
+                    # copy tags
+                    tag_update = """INSERT INTO fact_tags(fact_id, tag_id)
+                                         SELECT ?, tag_id
+                                           FROM fact_tags
+                                          WHERE fact_id = ?"""
+                    self.execute(tag_update, (new_fact_id, fact["id"])) #clone tags
 
                 if trophies:
                     trophies.unlock("split")
 
             # overlap start
-            elif start_time < fact["start_time"] < end_time:
+            elif start_time <= fact["start_time"] <= end_time:
                 logging.info("Overlapping start of %s" % fact["name"])
                 self.execute("UPDATE facts SET start_time=? WHERE id=?",
                              (end_time, fact["id"]))
 
             # overlap end
-            elif start_time < fact["end_time"] < end_time:
+            elif start_time < fact_end_time <= end_time:
                 logging.info("Overlapping end of %s" % fact["name"])
                 self.execute("UPDATE facts SET end_time=? WHERE id=?",
                              (start_time, fact["id"]))
@@ -639,7 +653,6 @@ class Storage(storage.Storage):
 
     def __get_todays_facts(self):
         try:
-            from configuration import conf
             day_start = conf.get("day_start_minutes")
         except:
             day_start = 5 * 60 # default day start to 5am
@@ -651,7 +664,6 @@ class Storage(storage.Storage):
 
     def __get_facts(self, date, end_date = None, search_terms = "", limit = 0, asc_by_date = True):
         try:
-            from configuration import conf
             day_start = conf.get("day_start_minutes")
         except:
             day_start = 5 * 60 # default day start to 5am
@@ -778,6 +790,9 @@ class Storage(storage.Storage):
 
         return self.fetchall(query, (category_id, ))
 
+
+    def __get_ext_activities(self, search):
+        return self.get_external().get_activities(search)
 
     def __get_activities(self, search):
         """returns list of activities for autocomplete,
@@ -1027,3 +1042,12 @@ class Storage(storage.Storage):
                 trophies.unlock("oldtimer")
 
         self.end_transaction()
+
+    def get_external(self):
+        if self.external_need_update:
+            self.refresh_external(conf)
+        return self.external
+    
+    def refresh_external(self, conf):
+        self.external = ActivitiesSource(conf)
+        self.external_need_update = False
