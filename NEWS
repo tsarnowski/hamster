@@ -1,4 +1,13 @@
 ===============
+Version 2.3.0
+===============
+ * getting external activities from d-bus
+ * better splitting activities (rounding to minutes)
+ * allow to write only hours (autocompletes minutes to 0)
+ * detect network connection prevents long startup
+ * fix for autocomplete issues - possible to suggest keys with number in project part, eg. ABC1-5432
+
+===============
 Version 2.2.2
 ===============
  * allow build with python3
