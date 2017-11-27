@@ -1,3 +1,8 @@
+hamster-integration (2.3.0.1) precise; urgency=emergency
+  * fix version issues in ppa (by increment version)
+
+ -- Tomasz Sarnowski <sarnowskitomek@gmail.com>  Mon, 27 Nov 2017 21:16:40 +0200
+
 hamster-integration (2.3.0.0) precise; urgency=emergency
   * getting external activities from d-bus
   * better splitting activities (rounding to minutes)
