@@ -1,3 +1,8 @@
+hamster-integration (2.3.0.2) precise; urgency=emergency
+  * fix version in about version
+
+ -- Tomasz Sarnowski <sarnowskitomek@gmail.com>  Tue, 28 Nov 2017 20:34:40 +0200
+
 hamster-integration (2.3.0.1) precise; urgency=emergency
   * fix version issues in ppa (by increment version)
 
