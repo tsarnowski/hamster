@@ -1,4 +1,4 @@
-hamster-integration (2.3.0.2) precise; urgency=emergency
+hamster-integration (2.3.0.3) precise; urgency=emergency
   * Move python-wnck to suggested dependencies
 
  -- Tomasz Sarnowski <sarnowskitomek@gmail.com>  Sun, 18 Apr 2020 20:34:40 +0200
