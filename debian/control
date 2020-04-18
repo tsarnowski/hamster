@@ -23,7 +23,6 @@ Depends: ${misc:Depends},
          python-gconf,
          python-dbus,
          python-gobject (>= 2.14.0),
-         python-wnck,
          python-gnome2,
          python-xdg,
 	python-requests,
@@ -33,7 +32,8 @@ Depends: ${misc:Depends},
 	python-dateutil
 Recommends: python-notify,
             gnome-icon-theme
-Suggests: python-evolution
+Suggests: python-evolution,
+            python-wnck
 Replaces: hamster-applet,
 	hamster-time-tracker,
 	hamster-rt
