@@ -11,6 +11,8 @@ Other:
 * @pip install python-dateutil@
 * @pip install jira==0.33@ or use debian package (@jira-python@ at @ppa:sarnowskitomek/hamter-intergration@)
 
+python-wnck is needed only for switching task based on desktop workspace switch
+
 h1. Installing
 
 *WARNING* It's preffered to uninstall other hamsters from system
